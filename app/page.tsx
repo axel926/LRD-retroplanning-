@@ -10,6 +10,7 @@ import {
 
 const MONTHS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
 const MONTHS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
+const DAY_LETTERS = ['D','L','M','M','J','V','S']
 
 function toIso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
@@ -17,53 +18,8 @@ function toIso(d: Date) {
 function parseDate(s: string) { return new Date(s + 'T00:00:00') }
 function fmtShort(s: string) { const d = parseDate(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}` }
 function addDays(dateStr: string, n: number) { const d = parseDate(dateStr); d.setDate(d.getDate() + n); return toIso(d) }
+function isWeekend(d: Date) { return d.getDay() === 0 || d.getDay() === 6 }
 function startOfWeek(dateStr: string) { const d = parseDate(dateStr); const day = d.getDay(); const diff = (day === 0 ? -6 : 1 - day); d.setDate(d.getDate() + diff); return toIso(d) }
-
-type ZoomLevel = 'day' | 'week' | 'month'
-type View = 'gantt' | 'overview'
-
-function getViewRange(zoom: ZoomLevel, anchor: Date): { start: Date, end: Date, columns: {label: string, key: string, start: Date, end: Date}[] } {
-  const cols: {label: string, key: string, start: Date, end: Date}[] = []
-
-  if (zoom === 'day') {
-    // Show 30 days centered on anchor
-    const start = new Date(anchor)
-    start.setDate(start.getDate() - 7)
-    for (let i = 0; i < 30; i++) {
-      const d = new Date(start)
-      d.setDate(d.getDate() + i)
-      const end = new Date(d)
-      end.setDate(end.getDate() + 1)
-      const isToday = toIso(d) === toIso(new Date())
-      cols.push({ label: `${d.getDate()} ${MONTHS[d.getMonth()]}`, key: toIso(d), start: d, end })
-    }
-    return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
-  }
-
-  if (zoom === 'week') {
-    // Show 12 weeks
-    const startD = parseDate(startOfWeek(toIso(anchor)))
-    startD.setDate(startD.getDate() - 7)
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(startD)
-      d.setDate(d.getDate() + i * 7)
-      const end = new Date(d)
-      end.setDate(end.getDate() + 7)
-      cols.push({ label: `S${getWeekNum(d)} ${MONTHS[d.getMonth()]}`, key: toIso(d), start: d, end })
-    }
-    return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
-  }
-
-  // month — 6 months
-  const start = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1)
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(start.getFullYear(), start.getMonth() + i, 1)
-    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
-    cols.push({ label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, key: `${d.getFullYear()}-${d.getMonth()}`, start: d, end })
-  }
-  return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
-}
-
 function getWeekNum(d: Date) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
   const dayNum = date.getUTCDay() || 7
@@ -72,11 +28,72 @@ function getWeekNum(d: Date) {
   return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1)/7)
 }
 
+type ZoomLevel = 'day' | 'week' | 'month'
+type View = 'gantt' | 'overview'
+
+type Column = { label: string, sublabel?: string, key: string, start: Date, end: Date, isWeekend?: boolean, isToday?: boolean }
+
+function getViewRange(zoom: ZoomLevel, anchor: Date): { start: Date, end: Date, columns: Column[] } {
+  const today = toIso(new Date())
+
+  if (zoom === 'day') {
+    // Only weekdays — show 4 weeks of weekdays (20 days)
+    const cols: Column[] = []
+    // Find monday of current week
+    const monday = parseDate(startOfWeek(toIso(anchor)))
+    monday.setDate(monday.getDate() - 7) // start 1 week before
+    let d = new Date(monday)
+    while (cols.length < 25) {
+      if (!isWeekend(d)) {
+        const end = new Date(d); end.setDate(end.getDate() + 1)
+        cols.push({
+          label: DAY_LETTERS[d.getDay()],
+          sublabel: `${d.getDate()} ${MONTHS[d.getMonth()]}`,
+          key: toIso(d),
+          start: new Date(d),
+          end,
+          isToday: toIso(d) === today,
+        })
+      }
+      d.setDate(d.getDate() + 1)
+    }
+    return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
+  }
+
+  if (zoom === 'week') {
+    const cols: Column[] = []
+    const startD = parseDate(startOfWeek(toIso(anchor)))
+    startD.setDate(startD.getDate() - 7)
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(startD); d.setDate(d.getDate() + i * 7)
+      const end = new Date(d); end.setDate(end.getDate() + 7)
+      cols.push({ label: `S${getWeekNum(d)}`, sublabel: `${d.getDate()} ${MONTHS[d.getMonth()]}`, key: toIso(d), start: d, end })
+    }
+    return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
+  }
+
+  // month
+  const cols: Column[] = []
+  const start = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1)
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1)
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+    cols.push({ label: MONTHS[d.getMonth()], sublabel: String(d.getFullYear()), key: `${d.getFullYear()}-${d.getMonth()}`, start: d, end })
+  }
+  return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
+}
+
+// For day zoom: map date to position ignoring weekends
+function buildDayMap(columns: Column[]): Map<string, number> {
+  const map = new Map<string, number>()
+  columns.forEach((col, i) => { map.set(col.key, i) })
+  return map
+}
+
 function snapDays(taskId: string, newStart: string, newEnd: string, allTasks: Task[], snapPx: number, dayWidthPx: number): { start: string; end: string } {
   const snapDayThreshold = Math.max(1, Math.round(snapPx / dayWidthPx))
   const dur = (parseDate(newEnd).getTime() - parseDate(newStart).getTime()) / 86400000
   let bestDelta = 0, bestDist = snapDayThreshold + 1
-
   for (const t of allTasks) {
     if (t.id === taskId) continue
     const d1 = (parseDate(t.end_date).getTime() - parseDate(newStart).getTime()) / 86400000
@@ -86,7 +103,6 @@ function snapDays(taskId: string, newStart: string, newEnd: string, allTasks: Ta
     const d3 = (parseDate(t.start_date).getTime() - parseDate(newStart).getTime()) / 86400000
     if (Math.abs(d3) <= snapDayThreshold && Math.abs(d3) < bestDist) { bestDelta = d3; bestDist = Math.abs(d3) }
   }
-
   if (bestDist <= snapDayThreshold) {
     const snappedStart = addDays(newStart, bestDelta)
     return { start: snappedStart, end: addDays(snappedStart, dur) }
@@ -126,7 +142,7 @@ export default function Home() {
   const dragRef = useRef<{
     taskId: string, type: 'move'|'resize',
     startX: number, areaWidth: number,
-    totalDays: number, viewStart: Date,
+    totalDays: number,
     origStart: string, origEnd: string, dur: number,
   } | null>(null)
 
@@ -152,16 +168,45 @@ export default function Home() {
   const { start: viewStart, end: viewEnd, columns } = getViewRange(zoom, anchor)
   const totalDays = (viewEnd.getTime() - viewStart.getTime()) / 86400000
 
-  function pct(dateStr: string) {
+  // For day zoom, use column-based positioning
+  const dayMap = zoom === 'day' ? buildDayMap(columns) : null
+
+  function pctFromDate(dateStr: string): number {
+    if (zoom === 'day' && dayMap) {
+      // Find nearest weekday
+      let d = parseDate(dateStr)
+      let attempts = 0
+      while (isWeekend(d) && attempts < 7) { d.setDate(d.getDate() + 1); attempts++ }
+      const key = toIso(d)
+      const idx = dayMap.get(key)
+      if (idx === undefined) {
+        // Before or after range
+        if (d < columns[0].start) return 0
+        return 100
+      }
+      return (idx / columns.length) * 100
+    }
     return ((parseDate(dateStr).getTime() - viewStart.getTime()) / 86400000 / totalDays) * 100
   }
-  function pctW(s: string, e: string) {
+
+  function pctWidth(s: string, e: string): number {
+    if (zoom === 'day' && dayMap) {
+      // Count weekdays between s and e
+      let d = parseDate(s)
+      const endD = parseDate(e)
+      let count = 0
+      while (d < endD) {
+        if (!isWeekend(d)) count++
+        d.setDate(d.getDate() + 1)
+      }
+      return (count / columns.length) * 100
+    }
     return ((parseDate(e).getTime() - parseDate(s).getTime()) / 86400000 / totalDays) * 100
   }
 
   function shiftAnchor(dir: number) {
     const d = new Date(anchor)
-    if (zoom === 'day') d.setDate(d.getDate() + dir * 14)
+    if (zoom === 'day') d.setDate(d.getDate() + dir * 5)
     else if (zoom === 'week') d.setDate(d.getDate() + dir * 28)
     else d.setMonth(d.getMonth() + dir * 3)
     setAnchor(d)
@@ -177,8 +222,7 @@ export default function Home() {
     dragRef.current = {
       taskId, type: isResize ? 'resize' : 'move',
       startX: e.clientX, areaWidth: rect.width,
-      totalDays, viewStart,
-      origStart: task.start_date, origEnd: task.end_date, dur,
+      totalDays, origStart: task.start_date, origEnd: task.end_date, dur,
     }
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
@@ -293,17 +337,33 @@ export default function Home() {
 
   const selectedProject = projects.find(p => p.id === selectedId)
   const projTasks = tasks.filter(t => t.project_id === selectedId)
-  const todayPct = Math.max(0, Math.min(100, pct(toIso(new Date()))))
+  const todayPct = pctFromDate(toIso(new Date()))
   const catSubs = CATEGORIES[tCategory].subs
 
   const anchorLabel = zoom === 'day'
-    ? `${fmtShort(toIso(viewStart))} — ${fmtShort(toIso(new Date(viewEnd.getTime()-86400000)))}`
+    ? `${columns[0]?.sublabel} — ${columns[columns.length-1]?.sublabel}`
     : zoom === 'week'
-    ? `${fmtShort(toIso(viewStart))} — ${fmtShort(toIso(new Date(viewEnd.getTime()-86400000)))}`
+    ? `S${getWeekNum(columns[0]?.start || new Date())} — S${getWeekNum(columns[columns.length-1]?.start || new Date())}`
     : `${MONTHS_FULL[columns[0]?.start.getMonth()]} — ${MONTHS_FULL[columns[columns.length-1]?.start.getMonth()]} ${columns[columns.length-1]?.start.getFullYear()}`
+
+  // Week sub-header for day zoom: group by week
+  const weekGroups: {label: string, count: number}[] = []
+  if (zoom === 'day') {
+    let lastWeek = -1
+    columns.forEach(col => {
+      const wn = getWeekNum(col.start)
+      if (wn !== lastWeek) {
+        weekGroups.push({ label: `S${wn} · ${MONTHS[col.start.getMonth()]} ${col.start.getFullYear()}`, count: 1 })
+        lastWeek = wn
+      } else {
+        weekGroups[weekGroups.length-1].count++
+      }
+    })
+  }
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
+      {/* TOPBAR */}
       <div style={{ background:'#144947', borderBottom:'1px solid rgba(0,0,0,0.2)', padding:'0 24px', height:54, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, zIndex:100 }}>
         <div style={{ fontFamily:'var(--font-display)', fontSize:21, letterSpacing:'0.12em', color:'white' }}>
           LA RÉPONSE D. <span style={{ color:'#9DD4D1' }}>·</span> RÉTRO
@@ -315,6 +375,7 @@ export default function Home() {
       </div>
 
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
+        {/* SIDEBAR */}
         <div style={{ width:230, flexShrink:0, background:'#144947', borderRight:'1px solid rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
           <div style={{ padding:'16px 14px 10px', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.2em', color:'#9DD4D1', marginBottom:10 }}>PROJETS EN COURS</div>
@@ -349,54 +410,67 @@ export default function Home() {
           </div>
         </div>
 
+        {/* MAIN */}
         <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', background:'#7BBFBC' }}>
           {view === 'gantt' ? (
             <>
+              {/* TOOLBAR */}
               <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 22px', background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0 }}>
                 <div style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:'0.08em', color:'white', flex:1 }}>
                   {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
                 </div>
-
                 {/* ZOOM */}
                 <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid rgba(255,255,255,0.2)' }}>
                   {(['day','week','month'] as ZoomLevel[]).map(z => (
-                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 12px', background:zoom===z?'white':'transparent', color:zoom===z?'#144947':'white', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.08em', borderLeft: z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
+                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 12px', background:zoom===z?'white':'transparent', color:zoom===z?'#144947':'white', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.08em', borderLeft:z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
                       {z === 'day' ? 'JOUR' : z === 'week' ? 'SEMAINE' : 'MOIS'}
                     </button>
                   ))}
                 </div>
-
                 {/* NAV */}
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                   <button onClick={()=>shiftAnchor(-1)} style={navBtnStyle}>‹</button>
-                  <div style={{ fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.08em', minWidth:160, textAlign:'center', color:'white' }}>{anchorLabel}</div>
+                  <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.08em', minWidth:170, textAlign:'center', color:'white' }}>{anchorLabel}</div>
                   <button onClick={()=>shiftAnchor(1)} style={navBtnStyle}>›</button>
-                  <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, fontSize:10, width:'auto', padding:'0 8px', letterSpacing:'0.06em', fontFamily:'var(--font-display)' }}>AUJOURD'HUI</button>
+                  <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, fontSize:10, width:'auto', padding:'0 10px', fontFamily:'var(--font-display)' }}>AUJOURD'HUI</button>
                 </div>
-
                 {selectedProject && <button onClick={() => openNewTask(selectedId!)} style={btnStyle('primary')}>+ TÂCHE</button>}
               </div>
 
+              {/* GANTT */}
               <div style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }}>
-                <div style={{ minWidth: zoom==='day'?1200:900, display:'flex', flexDirection:'column' }}>
-                  {/* HEADER */}
-                  <div style={{ display:'flex', position:'sticky', top:0, zIndex:10, background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
+                <div style={{ minWidth: zoom==='day'?columns.length*44+200:900, display:'flex', flexDirection:'column' }}>
+
+                  {/* WEEK GROUP HEADER (day zoom only) */}
+                  {zoom === 'day' && (
+                    <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'#4A8E8B', borderBottom:'1px solid rgba(0,0,0,0.1)' }}>
+                      <div style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
+                      <div style={{ flex:1, display:'flex' }}>
+                        {weekGroups.map((wg, i) => (
+                          <div key={i} style={{ width:`${(wg.count/columns.length)*100}%`, height:20, display:'flex', alignItems:'center', paddingLeft:8, fontFamily:'var(--font-display)', fontSize:9, letterSpacing:'0.12em', color:'rgba(255,255,255,0.5)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', whiteSpace:'nowrap', overflow:'hidden' }}>
+                            {wg.label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* COLUMN HEADER */}
+                  <div style={{ display:'flex', position:'sticky', top: zoom==='day'?20:0, zIndex:10, background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
                     <div style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
-                      <div style={{ height:36, display:'flex', alignItems:'center', padding:'0 16px', fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>TÂCHE</div>
+                      <div style={{ height:zoom==='day'?32:36, display:'flex', alignItems:'center', padding:'0 16px', fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>TÂCHE</div>
                     </div>
                     <div style={{ flex:1, display:'flex' }}>
-                      {columns.map((col, i) => {
-                        const isToday = zoom==='day' && toIso(col.start) === toIso(new Date())
-                        const isWeekend = zoom==='day' && (col.start.getDay()===0||col.start.getDay()===6)
-                        return (
-                          <div key={col.key} style={{ flex:1, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?10:11, letterSpacing:'0.08em', color: isToday?'white':isWeekend?'rgba(255,255,255,0.35)':'rgba(255,255,255,0.6)', borderLeft:i>0?'1px solid rgba(0,0,0,0.12)':'none', background: isToday?'rgba(255,255,255,0.15)':isWeekend?'rgba(0,0,0,0.06)':'transparent', whiteSpace:'nowrap' }}>
-                            {col.label}
-                          </div>
-                        )
-                      })}
+                      {columns.map((col, i) => (
+                        <div key={col.key} style={{ flex:1, height:zoom==='day'?32:36, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?13:11, letterSpacing:'0.08em', color: col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background: col.isToday?'rgba(255,255,255,0.18)':'transparent', whiteSpace:'nowrap' }}>
+                          <span style={{ fontWeight: col.isToday?700:400 }}>{col.label}</span>
+                          {zoom !== 'day' && col.sublabel && <span style={{ fontSize:9, opacity:0.5, marginTop:1 }}>{col.sublabel}</span>}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
+                  {/* ROWS */}
                   {!selectedProject ? (
                     <div style={{ padding:'60px 0', textAlign:'center', color:'rgba(255,255,255,0.4)' }}>
                       <div style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em' }}>AUCUN PROJET SÉLECTIONNÉ</div>
@@ -408,8 +482,8 @@ export default function Home() {
                     </div>
                   ) : (
                     projTasks.map(task => {
-                      const l = Math.max(0, pct(task.start_date))
-                      const w = Math.max(0.3, pctW(task.start_date, task.end_date))
+                      const l = Math.max(0, pctFromDate(task.start_date))
+                      const w = Math.max(0.5, pctWidth(task.start_date, task.end_date))
                       const isSnapping = snapIndicator === task.id
                       const label = task.subcategory ? task.subcategory.toUpperCase() : CATEGORIES[task.category as keyof typeof CATEGORIES]?.label || task.category
                       return (
@@ -431,22 +505,15 @@ export default function Home() {
                           </div>
 
                           <div className="bars-area" style={{ flex:1, position:'relative', display:'flex', alignItems:'center' }}>
-                            {/* Column lines */}
-                            {columns.map((col, i) => {
-                              const isWeekend = zoom==='day'&&(col.start.getDay()===0||col.start.getDay()===6)
-                              const isToday = zoom==='day'&&toIso(col.start)===toIso(new Date())
-                              return (
-                                <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width: zoom==='day'?`${100/columns.length}%`:'1px', background:isToday?'rgba(255,255,255,0.1)':isWeekend?'rgba(0,0,0,0.06)':'rgba(0,0,0,0.06)', pointerEvents:'none', borderLeft:i>0?'1px solid rgba(0,0,0,0.07)':'none' }}/>
-                              )
-                            })}
-                            {/* Today line */}
+                            {columns.map((col, i) => (
+                              <div key={col.key} style={{ position:'absolute', top:0, bottom:0, left:`${(i/columns.length)*100}%`, width:`${100/columns.length}%`, background: col.isToday?'rgba(255,255,255,0.08)':'transparent', borderLeft:i>0?'1px solid rgba(0,0,0,0.07)':'none', pointerEvents:'none' }}/>
+                            ))}
                             {todayPct>=0&&todayPct<=100&&(
                               <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.7)',zIndex:4,pointerEvents:'none' }}/>
                             )}
-                            {/* BAR */}
                             <div
                               onMouseDown={e => onMouseDownBar(e, task.id, false)}
-                              style={{ position:'absolute', height:28, left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 10px', fontSize:10, fontWeight:500, letterSpacing:'0.04em', color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSnapping?'2px solid white':'none' }}
+                              style={{ position:'absolute', height:28, left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 10px', fontSize:10, fontWeight:500, color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSnapping?'2px solid white':'none' }}
                             >
                               <div style={{ position:'absolute',left:0,top:0,bottom:0,width:`${task.progress}%`,background:'rgba(0,0,0,0.2)',borderRadius:'2px 0 0 2px',pointerEvents:'none' }}/>
                               <span style={{ position:'relative',zIndex:1 }}>{label}{task.name&&task.name!==task.subcategory?` · ${task.name}`:''}</span>
@@ -549,7 +616,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
   const total = (yE.getTime() - yS.getTime()) / 86400000 + 1
   const pct = (d:string) => Math.max(0, Math.min(100, ((new Date(d+'T00:00:00').getTime()-yS.getTime())/86400000/total)*100))
   const todayPct = new Date().getFullYear()===year ? pct(toIso(new Date())) : -1
-  const MONTHS_SHORT = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
+  const MS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
 
   return (
     <div style={{ flex:1, overflowY:'auto', padding:28 }}>
@@ -559,7 +626,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
         <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
       </div>
       <div style={{ display:'flex', paddingLeft:180, marginBottom:8 }}>
-        {MONTHS_SHORT.map(m => <div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.12em', color:'rgba(255,255,255,0.5)', textAlign:'center' }}>{m}</div>)}
+        {MS.map(m => <div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.12em', color:'rgba(255,255,255,0.5)', textAlign:'center' }}>{m}</div>)}
       </div>
       {projects.map(proj => {
         const pt = tasks.filter(t => t.project_id === proj.id)
@@ -574,20 +641,15 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
               <div style={{ width:170, flexShrink:0 }}/>
               <div style={{ flex:1, height:20, borderRadius:2, background:'rgba(0,0,0,0.15)', position:'relative' }}>
                 {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.6)',zIndex:3 }}/>}
-                {pt.map(t => {
-                  const l=pct(t.start_date), w=Math.max(0.3,pct(t.end_date)-l)
-                  return <div key={t.id} style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.7,borderRadius:2 }}/>
-                })}
+                {pt.map(t => { const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l); return <div key={t.id} style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.7,borderRadius:2 }}/> })}
               </div>
             </div>
             {pt.map(t => {
-              const l=pct(t.start_date), w=Math.max(0.3,pct(t.end_date)-l)
+              const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l)
               const label = t.subcategory ? t.subcategory.toUpperCase() : CATEGORIES[t.category as keyof typeof CATEGORIES]?.label || t.category
               return (
                 <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
-                  <div style={{ width:170, flexShrink:0, fontSize:10, color:'rgba(255,255,255,0.5)', paddingLeft:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                    {label}{t.name&&t.name!==t.subcategory?` · ${t.name}`:''}
-                  </div>
+                  <div style={{ width:170, flexShrink:0, fontSize:10, color:'rgba(255,255,255,0.5)', paddingLeft:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{label}{t.name&&t.name!==t.subcategory?` · ${t.name}`:''}</div>
                   <div style={{ flex:1, height:14, borderRadius:2, background:'rgba(0,0,0,0.12)', position:'relative' }}>
                     {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'rgba(255,255,255,0.5)',zIndex:3 }}/>}
                     <div style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.85,borderRadius:2 }}/>
