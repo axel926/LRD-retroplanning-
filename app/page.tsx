@@ -17,41 +17,72 @@ function toIso(d: Date) {
 function parseDate(s: string) { return new Date(s + 'T00:00:00') }
 function fmtShort(s: string) { const d = parseDate(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}` }
 function addDays(dateStr: string, n: number) { const d = parseDate(dateStr); d.setDate(d.getDate() + n); return toIso(d) }
+function startOfWeek(dateStr: string) { const d = parseDate(dateStr); const day = d.getDay(); const diff = (day === 0 ? -6 : 1 - day); d.setDate(d.getDate() + diff); return toIso(d) }
 
-function getViewMonths(centerMonth: number, centerYear: number) {
-  const out: {month:number,year:number}[] = []
-  for (let i = -1; i <= 4; i++) {
-    let m = centerMonth + i, y = centerYear
-    while (m < 0) { m += 12; y-- }
-    while (m > 11) { m -= 12; y++ }
-    out.push({ month: m, year: y })
+type ZoomLevel = 'day' | 'week' | 'month'
+type View = 'gantt' | 'overview'
+
+function getViewRange(zoom: ZoomLevel, anchor: Date): { start: Date, end: Date, columns: {label: string, key: string, start: Date, end: Date}[] } {
+  const cols: {label: string, key: string, start: Date, end: Date}[] = []
+
+  if (zoom === 'day') {
+    // Show 30 days centered on anchor
+    const start = new Date(anchor)
+    start.setDate(start.getDate() - 7)
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(start)
+      d.setDate(d.getDate() + i)
+      const end = new Date(d)
+      end.setDate(end.getDate() + 1)
+      const isToday = toIso(d) === toIso(new Date())
+      cols.push({ label: `${d.getDate()} ${MONTHS[d.getMonth()]}`, key: toIso(d), start: d, end })
+    }
+    return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
   }
-  return out
+
+  if (zoom === 'week') {
+    // Show 12 weeks
+    const startD = parseDate(startOfWeek(toIso(anchor)))
+    startD.setDate(startD.getDate() - 7)
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(startD)
+      d.setDate(d.getDate() + i * 7)
+      const end = new Date(d)
+      end.setDate(end.getDate() + 7)
+      cols.push({ label: `S${getWeekNum(d)} ${MONTHS[d.getMonth()]}`, key: toIso(d), start: d, end })
+    }
+    return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
+  }
+
+  // month — 6 months
+  const start = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1)
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1)
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+    cols.push({ label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, key: `${d.getFullYear()}-${d.getMonth()}`, start: d, end })
+  }
+  return { start: cols[0].start, end: cols[cols.length-1].end, columns: cols }
 }
 
-// Snap: returns snapped day delta given a candidate position
-function snapDays(
-  taskId: string,
-  newStart: string,
-  newEnd: string,
-  allTasks: Task[],
-  snapPx: number,
-  dayWidthPx: number
-): { start: string; end: string } {
+function getWeekNum(d: Date) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+  const dayNum = date.getUTCDay() || 7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1))
+  return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1)/7)
+}
+
+function snapDays(taskId: string, newStart: string, newEnd: string, allTasks: Task[], snapPx: number, dayWidthPx: number): { start: string; end: string } {
   const snapDayThreshold = Math.max(1, Math.round(snapPx / dayWidthPx))
   const dur = (parseDate(newEnd).getTime() - parseDate(newStart).getTime()) / 86400000
-  let bestDelta = 0
-  let bestDist = snapDayThreshold + 1
+  let bestDelta = 0, bestDist = snapDayThreshold + 1
 
   for (const t of allTasks) {
     if (t.id === taskId) continue
-    // snap my start to their end
     const d1 = (parseDate(t.end_date).getTime() - parseDate(newStart).getTime()) / 86400000
     if (Math.abs(d1) <= snapDayThreshold && Math.abs(d1) < bestDist) { bestDelta = d1; bestDist = Math.abs(d1) }
-    // snap my end to their start
     const d2 = (parseDate(t.start_date).getTime() - parseDate(newEnd).getTime()) / 86400000
     if (Math.abs(d2) <= snapDayThreshold && Math.abs(d2) < bestDist) { bestDelta = d2; bestDist = Math.abs(d2) }
-    // snap my start to their start
     const d3 = (parseDate(t.start_date).getTime() - parseDate(newStart).getTime()) / 86400000
     if (Math.abs(d3) <= snapDayThreshold && Math.abs(d3) < bestDist) { bestDelta = d3; bestDist = Math.abs(d3) }
   }
@@ -63,15 +94,13 @@ function snapDays(
   return { start: newStart, end: newEnd }
 }
 
-type View = 'gantt' | 'overview'
-
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [view, setView] = useState<View>('gantt')
-  const [centerMonth, setCenterMonth] = useState(new Date().getMonth())
-  const [centerYear, setCenterYear] = useState(new Date().getFullYear())
+  const [zoom, setZoom] = useState<ZoomLevel>('month')
+  const [anchor, setAnchor] = useState(new Date())
   const [overviewYear, setOverviewYear] = useState(new Date().getFullYear())
   const [loading, setLoading] = useState(true)
   const [showProjModal, setShowProjModal] = useState(false)
@@ -97,9 +126,8 @@ export default function Home() {
   const dragRef = useRef<{
     taskId: string, type: 'move'|'resize',
     startX: number, areaWidth: number,
-    totalDays: number,
+    totalDays: number, viewStart: Date,
     origStart: string, origEnd: string, dur: number,
-    ganttAreaEl: HTMLElement,
   } | null>(null)
 
   const load = useCallback(async () => {
@@ -121,10 +149,8 @@ export default function Home() {
     return () => { supabase.removeChannel(ch) }
   }, [load])
 
-  const viewMonths = getViewMonths(centerMonth, centerYear)
-  const viewStart = new Date(viewMonths[0].year, viewMonths[0].month, 1)
-  const viewEnd = new Date(viewMonths[viewMonths.length-1].year, viewMonths[viewMonths.length-1].month+1, 0)
-  const totalDays = (viewEnd.getTime() - viewStart.getTime()) / 86400000 + 1
+  const { start: viewStart, end: viewEnd, columns } = getViewRange(zoom, anchor)
+  const totalDays = (viewEnd.getTime() - viewStart.getTime()) / 86400000
 
   function pct(dateStr: string) {
     return ((parseDate(dateStr).getTime() - viewStart.getTime()) / 86400000 / totalDays) * 100
@@ -133,20 +159,26 @@ export default function Home() {
     return ((parseDate(e).getTime() - parseDate(s).getTime()) / 86400000 / totalDays) * 100
   }
 
+  function shiftAnchor(dir: number) {
+    const d = new Date(anchor)
+    if (zoom === 'day') d.setDate(d.getDate() + dir * 14)
+    else if (zoom === 'week') d.setDate(d.getDate() + dir * 28)
+    else d.setMonth(d.getMonth() + dir * 3)
+    setAnchor(d)
+  }
+
   function onMouseDownBar(e: React.MouseEvent, taskId: string, isResize: boolean) {
     if (isResize) e.stopPropagation()
     e.preventDefault()
-    const bar = e.currentTarget as HTMLElement
-    const ganttArea = bar.closest('.gantt-scroll') as HTMLElement
-    const barsArea = bar.closest('.bars-area') as HTMLElement
+    const barsArea = (e.currentTarget as HTMLElement).closest('.bars-area') as HTMLElement
     const rect = barsArea.getBoundingClientRect()
     const task = tasks.find(t => t.id === taskId)!
     const dur = (parseDate(task.end_date).getTime() - parseDate(task.start_date).getTime()) / 86400000
     dragRef.current = {
       taskId, type: isResize ? 'resize' : 'move',
       startX: e.clientX, areaWidth: rect.width,
-      totalDays, origStart: task.start_date, origEnd: task.end_date, dur,
-      ganttAreaEl: ganttArea,
+      totalDays, viewStart,
+      origStart: task.start_date, origEnd: task.end_date, dur,
     }
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
@@ -158,7 +190,7 @@ export default function Home() {
     const dx = e.clientX - d.startX
     const rawDays = Math.round((dx / d.areaWidth) * d.totalDays)
     const dayWidthPx = d.areaWidth / d.totalDays
-    const SNAP_PX = 12
+    const SNAP_PX = 10
 
     setTasks(prev => prev.map(t => {
       if (t.id !== d.taskId) return t
@@ -166,15 +198,12 @@ export default function Home() {
         const rawStart = addDays(d.origStart, rawDays)
         const rawEnd = addDays(d.origEnd, rawDays)
         const snapped = snapDays(t.id, rawStart, rawEnd, prev, SNAP_PX, dayWidthPx)
-        const didSnap = snapped.start !== rawStart
-        setSnapIndicator(didSnap ? t.id : null)
+        setSnapIndicator(snapped.start !== rawStart ? t.id : null)
         return { ...t, start_date: snapped.start, end_date: snapped.end }
       } else {
         const rawEnd = addDays(d.origEnd, rawDays)
         const snapped = snapDays(t.id, t.start_date, rawEnd, prev, SNAP_PX, dayWidthPx)
-        if (parseDate(snapped.end) > parseDate(t.start_date)) {
-          return { ...t, end_date: snapped.end }
-        }
+        if (parseDate(snapped.end) > parseDate(t.start_date)) return { ...t, end_date: snapped.end }
         return t
       }
     }))
@@ -267,6 +296,12 @@ export default function Home() {
   const todayPct = Math.max(0, Math.min(100, pct(toIso(new Date()))))
   const catSubs = CATEGORIES[tCategory].subs
 
+  const anchorLabel = zoom === 'day'
+    ? `${fmtShort(toIso(viewStart))} — ${fmtShort(toIso(new Date(viewEnd.getTime()-86400000)))}`
+    : zoom === 'week'
+    ? `${fmtShort(toIso(viewStart))} — ${fmtShort(toIso(new Date(viewEnd.getTime()-86400000)))}`
+    : `${MONTHS_FULL[columns[0]?.start.getMonth()]} — ${MONTHS_FULL[columns[columns.length-1]?.start.getMonth()]} ${columns[columns.length-1]?.start.getFullYear()}`
+
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
       <div style={{ background:'#144947', borderBottom:'1px solid rgba(0,0,0,0.2)', padding:'0 24px', height:54, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, zIndex:100 }}>
@@ -317,32 +352,45 @@ export default function Home() {
         <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', background:'#7BBFBC' }}>
           {view === 'gantt' ? (
             <>
-              <div style={{ display:'flex', alignItems:'center', gap:14, padding:'10px 22px', background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0 }}>
-                <div style={{ fontFamily:'var(--font-display)', fontSize:26, letterSpacing:'0.08em', color:'white', flex:1 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 22px', background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0 }}>
+                <div style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:'0.08em', color:'white', flex:1 }}>
                   {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <button onClick={()=>{ let m=centerMonth-1,y=centerYear; if(m<0){m=11;y--}; setCenterMonth(m);setCenterYear(y)}} style={navBtnStyle}>‹</button>
-                  <div style={{ fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.12em', minWidth:150, textAlign:'center', color:'white' }}>
-                    {MONTHS_FULL[viewMonths[2].month].toUpperCase()} {viewMonths[2].year}
-                  </div>
-                  <button onClick={()=>{ let m=centerMonth+1,y=centerYear; if(m>11){m=0;y++}; setCenterMonth(m);setCenterYear(y)}} style={navBtnStyle}>›</button>
+
+                {/* ZOOM */}
+                <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid rgba(255,255,255,0.2)' }}>
+                  {(['day','week','month'] as ZoomLevel[]).map(z => (
+                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 12px', background:zoom===z?'white':'transparent', color:zoom===z?'#144947':'white', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.08em', borderLeft: z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
+                      {z === 'day' ? 'JOUR' : z === 'week' ? 'SEMAINE' : 'MOIS'}
+                    </button>
+                  ))}
                 </div>
+
+                {/* NAV */}
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <button onClick={()=>shiftAnchor(-1)} style={navBtnStyle}>‹</button>
+                  <div style={{ fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.08em', minWidth:160, textAlign:'center', color:'white' }}>{anchorLabel}</div>
+                  <button onClick={()=>shiftAnchor(1)} style={navBtnStyle}>›</button>
+                  <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, fontSize:10, width:'auto', padding:'0 8px', letterSpacing:'0.06em', fontFamily:'var(--font-display)' }}>AUJOURD'HUI</button>
+                </div>
+
                 {selectedProject && <button onClick={() => openNewTask(selectedId!)} style={btnStyle('primary')}>+ TÂCHE</button>}
               </div>
 
-              <div className="gantt-scroll" style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }}>
-                <div style={{ minWidth:900, display:'flex', flexDirection:'column' }}>
+              <div style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }}>
+                <div style={{ minWidth: zoom==='day'?1200:900, display:'flex', flexDirection:'column' }}>
+                  {/* HEADER */}
                   <div style={{ display:'flex', position:'sticky', top:0, zIndex:10, background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
                     <div style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
                       <div style={{ height:36, display:'flex', alignItems:'center', padding:'0 16px', fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>TÂCHE</div>
                     </div>
                     <div style={{ flex:1, display:'flex' }}>
-                      {viewMonths.map(({month,year}) => {
-                        const cur = month===new Date().getMonth()&&year===new Date().getFullYear()
+                      {columns.map((col, i) => {
+                        const isToday = zoom==='day' && toIso(col.start) === toIso(new Date())
+                        const isWeekend = zoom==='day' && (col.start.getDay()===0||col.start.getDay()===6)
                         return (
-                          <div key={`${year}-${month}`} style={{ flex:1, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:cur?13:11, letterSpacing:'0.12em', color:cur?'white':'rgba(255,255,255,0.55)', borderLeft:'1px solid rgba(0,0,0,0.12)' }}>
-                            {MONTHS[month]} <span style={{fontSize:9,marginLeft:4,opacity:.5}}>{year}</span>
+                          <div key={col.key} style={{ flex:1, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?10:11, letterSpacing:'0.08em', color: isToday?'white':isWeekend?'rgba(255,255,255,0.35)':'rgba(255,255,255,0.6)', borderLeft:i>0?'1px solid rgba(0,0,0,0.12)':'none', background: isToday?'rgba(255,255,255,0.15)':isWeekend?'rgba(0,0,0,0.06)':'transparent', whiteSpace:'nowrap' }}>
+                            {col.label}
                           </div>
                         )
                       })}
@@ -351,7 +399,7 @@ export default function Home() {
 
                   {!selectedProject ? (
                     <div style={{ padding:'60px 0', textAlign:'center', color:'rgba(255,255,255,0.4)' }}>
-                      <div style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em', marginBottom:8 }}>AUCUN PROJET SÉLECTIONNÉ</div>
+                      <div style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em' }}>AUCUN PROJET SÉLECTIONNÉ</div>
                     </div>
                   ) : projTasks.length === 0 ? (
                     <div style={{ padding:'60px 0', textAlign:'center', color:'rgba(255,255,255,0.4)' }}>
@@ -361,12 +409,12 @@ export default function Home() {
                   ) : (
                     projTasks.map(task => {
                       const l = Math.max(0, pct(task.start_date))
-                      const w = Math.max(0.5, pctW(task.start_date, task.end_date))
+                      const w = Math.max(0.3, pctW(task.start_date, task.end_date))
                       const isSnapping = snapIndicator === task.id
                       const label = task.subcategory ? task.subcategory.toUpperCase() : CATEGORIES[task.category as keyof typeof CATEGORIES]?.label || task.category
                       return (
-                        <div key={task.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.08)', minHeight:52 }}>
-                          <div onClick={() => openEditTask(task)} style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.08)', padding:'8px 16px', display:'flex', flexDirection:'column', justifyContent:'center', background:'rgba(255,255,255,0.06)', cursor:'pointer', position:'sticky', left:0, zIndex:5, transition:'background 0.1s' }}
+                        <div key={task.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.08)', minHeight:50 }}>
+                          <div onClick={() => openEditTask(task)} style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.08)', padding:'8px 16px', display:'flex', flexDirection:'column', justifyContent:'center', background:'rgba(255,255,255,0.06)', cursor:'pointer', position:'sticky', left:0, zIndex:5 }}
                             onMouseEnter={e=>(e.currentTarget.style.background='rgba(255,255,255,0.12)')}
                             onMouseLeave={e=>(e.currentTarget.style.background='rgba(255,255,255,0.06)')}
                           >
@@ -383,22 +431,26 @@ export default function Home() {
                           </div>
 
                           <div className="bars-area" style={{ flex:1, position:'relative', display:'flex', alignItems:'center' }}>
-                            {viewMonths.map((_,i) => (
-                              <div key={i} style={{ position:'absolute',top:0,bottom:0,left:`${i*(100/viewMonths.length)}%`,width:1,background:'rgba(0,0,0,0.08)',pointerEvents:'none' }}/>
-                            ))}
+                            {/* Column lines */}
+                            {columns.map((col, i) => {
+                              const isWeekend = zoom==='day'&&(col.start.getDay()===0||col.start.getDay()===6)
+                              const isToday = zoom==='day'&&toIso(col.start)===toIso(new Date())
+                              return (
+                                <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width: zoom==='day'?`${100/columns.length}%`:'1px', background:isToday?'rgba(255,255,255,0.1)':isWeekend?'rgba(0,0,0,0.06)':'rgba(0,0,0,0.06)', pointerEvents:'none', borderLeft:i>0?'1px solid rgba(0,0,0,0.07)':'none' }}/>
+                              )
+                            })}
+                            {/* Today line */}
                             {todayPct>=0&&todayPct<=100&&(
-                              <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.6)',zIndex:4,pointerEvents:'none' }}/>
+                              <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.7)',zIndex:4,pointerEvents:'none' }}/>
                             )}
+                            {/* BAR */}
                             <div
                               onMouseDown={e => onMouseDownBar(e, task.id, false)}
-                              style={{ position:'absolute', height:28, left:`${l}%`, width:`${Math.max(w,0.5)}%`, minWidth:8, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 10px', fontSize:10, fontWeight:500, letterSpacing:'0.04em', color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline: isSnapping ? '2px solid white' : 'none', transition:'outline 0.1s' }}
+                              style={{ position:'absolute', height:28, left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 10px', fontSize:10, fontWeight:500, letterSpacing:'0.04em', color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSnapping?'2px solid white':'none' }}
                             >
                               <div style={{ position:'absolute',left:0,top:0,bottom:0,width:`${task.progress}%`,background:'rgba(0,0,0,0.2)',borderRadius:'2px 0 0 2px',pointerEvents:'none' }}/>
                               <span style={{ position:'relative',zIndex:1 }}>{label}{task.name&&task.name!==task.subcategory?` · ${task.name}`:''}</span>
-                              <div
-                                onMouseDown={e => onMouseDownBar(e, task.id, true)}
-                                style={{ position:'absolute',right:0,top:0,bottom:0,width:8,cursor:'col-resize',background:'rgba(0,0,0,0.2)',borderRadius:'0 2px 2px 0' }}
-                              />
+                              <div onMouseDown={e=>onMouseDownBar(e,task.id,true)} style={{ position:'absolute',right:0,top:0,bottom:0,width:8,cursor:'col-resize',background:'rgba(0,0,0,0.2)',borderRadius:'0 2px 2px 0' }}/>
                             </div>
                           </div>
                         </div>
@@ -422,9 +474,7 @@ export default function Home() {
             <FormRow label="DÉBUT"><input type="date" value={pStart} onChange={e=>setPStart(e.target.value)}/></FormRow>
             <FormRow label="FIN"><input type="date" value={pEnd} onChange={e=>setPEnd(e.target.value)}/></FormRow>
           </div>
-          <FormRow label="COULEUR DU PROJET">
-            <ColorPicker colors={PROJ_COLORS} selected={pColor} onSelect={setPColor}/>
-          </FormRow>
+          <FormRow label="COULEUR DU PROJET"><ColorPicker colors={PROJ_COLORS} selected={pColor} onSelect={setPColor}/></FormRow>
           <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:22 }}>
             <button onClick={()=>setShowProjModal(false)} style={btnStyle('ghost')}>Annuler</button>
             <button onClick={handleCreateProject} style={btnStyle('primary')}>CRÉER LE PROJET</button>
@@ -462,9 +512,7 @@ export default function Home() {
             <FormRow label="DÉBUT"><input type="date" value={tStart} onChange={e=>setTStart(e.target.value)}/></FormRow>
             <FormRow label="FIN"><input type="date" value={tEnd} onChange={e=>setTEnd(e.target.value)}/></FormRow>
           </div>
-          <FormRow label="COULEUR DU BLOC">
-            <ColorPicker colors={TASK_COLORS} selected={tColor} onSelect={setTColor}/>
-          </FormRow>
+          <FormRow label="COULEUR DU BLOC"><ColorPicker colors={TASK_COLORS} selected={tColor} onSelect={setTColor}/></FormRow>
           <FormRow label={`AVANCEMENT · ${tProgress}%`}>
             <input type="range" min={0} max={100} value={tProgress} onChange={e=>setTProgress(Number(e.target.value))} style={{ width:'100%', accentColor:'#9DD4D1', cursor:'pointer' }}/>
           </FormRow>
@@ -483,7 +531,7 @@ function ColorPicker({ colors, selected, onSelect }: { colors: string[], selecte
   return (
     <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:4 }}>
       {colors.map(c => (
-        <div key={c} onClick={()=>onSelect(c)} style={{ width:24, height:24, borderRadius:'50%', background:c, cursor:'pointer', border:`2.5px solid ${c===selected?'white':'transparent'}`, transition:'transform 0.15s', flexShrink:0 }}
+        <div key={c} onClick={()=>onSelect(c)} style={{ width:24, height:24, borderRadius:'50%', background:c, cursor:'pointer', border:`2.5px solid ${c===selected?'white':'transparent'}`, transition:'transform 0.15s' }}
           onMouseEnter={e=>(e.currentTarget.style.transform='scale(1.2)')}
           onMouseLeave={e=>(e.currentTarget.style.transform='scale(1)')}
         />
@@ -522,7 +570,6 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
               <span style={{ fontFamily:'var(--font-display)', fontSize:15, letterSpacing:'0.1em', color:'white' }}>{proj.name}</span>
               <span style={{ fontSize:10, color:'rgba(255,255,255,0.4)' }}>{proj.client}</span>
             </div>
-            {/* One consolidated bar per project using project color */}
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
               <div style={{ width:170, flexShrink:0 }}/>
               <div style={{ flex:1, height:20, borderRadius:2, background:'rgba(0,0,0,0.15)', position:'relative' }}>
