@@ -18,7 +18,7 @@ export type Task = {
   id: string
   project_id: string
   name: string
-  category: 'crea' | 'prod' | 'sourcing'
+  category: string
   subcategory: string | null
   color: string
   start_date: string
@@ -26,11 +26,42 @@ export type Task = {
   progress: number
 }
 
-export const CATEGORIES = {
-  crea: { label: 'CRÉA', subs: ['mood', '3d', 'validations client'] },
-  prod: { label: 'PROD', subs: ['atelier', 'logistique', 'montage', 'démontage'] },
-  sourcing: { label: 'SOURCING', subs: [] },
-} as const
+export const BLOCK_LIBRARY = [
+  {
+    category: 'CRÉA',
+    color: '#2D6B8C',
+    blocks: [
+      'Devis','Valid. devis','Moodboards','Ensemblage','3D','Zoning',
+      'Roughs','AR client','Graphisme','Plans techniques',
+    ],
+  },
+  {
+    category: 'SOURCING',
+    color: '#6B8C2D',
+    blocks: [
+      'Recherches','Ident. animaux','Ident. ateliers','Ident. partenaires',
+      'Pré-sourcing','Sourcing','Étiquetage','Sélections végétaux','Sélections catalogue client',
+    ],
+  },
+  {
+    category: 'PROD',
+    color: '#1E6B68',
+    blocks: [
+      'Feuille de service','Repérages','Log matériaux amont','Lancement fab',
+      'Contrôle fab','Fin fab','Testing','Lancement impressions','Collecte log','Log sur site',
+    ],
+  },
+  {
+    category: 'CHANTIER',
+    color: '#8C6B2D',
+    blocks: ['Montage','Démontage','Exploitation','Revalorisation','Récup partenaires'],
+  },
+  {
+    category: 'CLIENT',
+    color: '#6B2D8C',
+    blocks: ['Point d\'étape client','Envoi facture'],
+  },
+] as const
 
 export const PROJ_COLORS = [
   '#1E6B68','#2D6B8C','#6B8C2D','#8C6B2D',
