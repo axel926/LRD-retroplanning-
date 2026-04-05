@@ -739,7 +739,7 @@ export default function Home() {
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
                               {todayPct>=0&&todayPct<=100&&(
-                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(0,0,0,0.3)',zIndex:4,pointerEvents:'none' }}/>
+                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1,background:'rgba(0,0,0,0.15)',zIndex:4,pointerEvents:'none' }}/>
                               )}
                               {laneTasks.map(task => {
                                 const l = Math.max(0, pctFromDate(task.start_date))
@@ -798,7 +798,7 @@ export default function Home() {
                 {showLibrary && (
                   <div style={{ width:250, flexShrink:0, background:'var(--surface)', borderLeft:'1px solid var(--border)', overflowY:'auto', display:'flex', flexDirection:'column' }}>
                     <div style={{ padding:'12px 14px 8px', borderBottom:'1px solid var(--border)', position:'sticky', top:0, background:'var(--surface)', zIndex:5 }}>
-                      <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'var(--accent)' }}>
+                      <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'#0E0D0B' }}>
                         {libraryTargetLane ? `→ ${lanes.find(l=>l.id===libraryTargetLane)?.name||'LIGNE'}` : 'AJOUTER UN BLOC'}
                       </div>
                       <div style={{ fontSize:10, color:'var(--text3)', marginTop:3 }}>Clic = ajouté à aujourd'hui</div>
@@ -812,7 +812,7 @@ export default function Home() {
                           </div>
                           {cat.blocks.map(block => (
                             <button key={block} onClick={() => addBlockFromLibrary(block, cat.color, cat.category)}
-                              style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', background:'var(--bg2)', border:'1px solid transparent', borderRadius:3, cursor:'pointer', textAlign:'left', color:'var(--text)', fontSize:11, fontFamily:'var(--font-body)', width:'100%', marginBottom:2 }}
+                              style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', background:'var(--bg2)', border:'1px solid transparent', borderRadius:3, cursor:'pointer', textAlign:'left', color:'#0E0D0B', fontSize:11, fontFamily:'var(--font-body)', width:'100%', marginBottom:2 }}
                               onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor=cat.color }}
                               onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor='transparent' }}
                             >
