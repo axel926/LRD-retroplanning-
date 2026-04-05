@@ -474,7 +474,7 @@ export default function Home() {
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
       {/* TOPBAR */}
       <div style={{ background:'#144947', borderBottom:'1px solid rgba(0,0,0,0.2)', padding:'0 24px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, zIndex:100 }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:24, letterSpacing:'0.12em', color:'white' }}>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:26, letterSpacing:'0.12em', color:'white' }}>
           LA RÉPONSE D. <span style={{ color:'#9DD4D1' }}>·</span> RÉTRO
         </div>
         <div style={{ display:'flex', gap:8, alignItems:'center' }}>
@@ -491,7 +491,7 @@ export default function Home() {
 
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
         {/* SIDEBAR */}
-        <div style={{ width:220, flexShrink:0, background:'#144947', borderRight:'1px solid rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ width:260, flexShrink:0, background:'#144947', borderRight:'1px solid rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
           <div style={{ padding:'14px 12px 8px', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.2em', color:'#9DD4D1', marginBottom:10 }}>PROJETS</div>
           </div>
@@ -508,7 +508,7 @@ export default function Home() {
                     <span style={{ fontWeight:500, fontSize:13, color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
                     <span onClick={e=>{e.stopPropagation();handleDeleteProject(p.id)}} style={{ color:'rgba(255,255,255,0.2)', fontSize:11, cursor:'pointer' }}>✕</span>
                   </div>
-                  <div style={{ fontSize:10, color:'rgba(255,255,255,0.4)', marginTop:2, paddingLeft:14 }}>{p.client} · {avg}%</div>
+                  <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginTop:2, paddingLeft:14 }}>{p.client} · {avg}%</div>
                   <div style={{ height:2, background:'rgba(255,255,255,0.08)', borderRadius:1, marginTop:5 }}>
                     <div style={{ height:'100%', width:`${avg}%`, background:p.color, borderRadius:1 }}/>
                   </div>
@@ -617,7 +617,7 @@ export default function Home() {
                               <input
                                 value={lane.name}
                                 onChange={e => renameLane(lane.id, e.target.value)}
-                                style={{ background:'transparent', border:'none', outline:'none', color:'white', fontSize:11, fontWeight:500, fontFamily:'var(--font-body)', flex:1, cursor:'text' }}
+                                style={{ background:'transparent', border:'none', outline:'none', color:'white', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', flex:1, cursor:'text' }}
                                 onClick={e => e.stopPropagation()}
                               />
                               {/* ADD BLOCK TO THIS LANE */}
@@ -660,7 +660,7 @@ export default function Home() {
                                         setSelectedTaskIds(new Set([task.id]))
                                       }
                                     }}
-                                    style={{ position:'absolute', height:30, top:'50%', transform:'translateY(-50%)', left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 8px', fontSize:10, fontWeight:500, color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:isSelected?3:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSelected?'2px solid white':'none', boxShadow:isSelected?'0 0 0 2px rgba(255,255,255,0.4)':'none' }}
+                                    style={{ position:'absolute', height:34, top:'50%', transform:'translateY(-50%)', left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 8px', fontSize:12, fontWeight:500, color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:isSelected?3:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSelected?'2px solid white':'none', boxShadow:isSelected?'0 0 0 2px rgba(255,255,255,0.4)':'none' }}
                                   >
                                     <div style={{ position:'absolute',left:0,top:0,bottom:0,width:`${task.progress}%`,background:'rgba(0,0,0,0.2)',borderRadius:'2px 0 0 2px',pointerEvents:'none' }}/>
                                     <span style={{ position:'relative',zIndex:1 }}>{task.name}</span>
@@ -796,24 +796,24 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
     <div style={{ flex:1, overflowY:'auto', padding:28 }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
         <button onClick={()=>onYearChange(year-1)} style={navBtnStyle}>‹</button>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.06em', color:'white' }}>VUE <span style={{color:'#144947'}}>{year}</span></div>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:42, letterSpacing:'0.06em', color:'white' }}>VUE <span style={{color:'#144947'}}>{year}</span></div>
         <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
       </div>
-      <div style={{ display:'flex', paddingLeft:180, marginBottom:8 }}>
-        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.12em', color:'rgba(255,255,255,0.5)', textAlign:'center' }}>{m}</div>)}
+      <div style={{ display:'flex', paddingLeft:212, marginBottom:10 }}>
+        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:13, letterSpacing:'0.1em', color:'rgba(255,255,255,0.6)', textAlign:'center' }}>{m}</div>)}
       </div>
       {projects.map(proj => {
         const pt = tasks.filter(t=>t.project_id===proj.id)
         return (
-          <div key={proj.id} style={{ marginBottom:22 }}>
+          <div key={proj.id} style={{ marginBottom:62 }}>
             <div onClick={()=>onSelectProject(proj.id)} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8, cursor:'pointer' }}>
               <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
-              <span style={{ fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.1em', color:'white' }}>{proj.name}</span>
-              <span style={{ fontSize:10, color:'rgba(255,255,255,0.4)' }}>{proj.client}</span>
+              <span style={{ fontFamily:'var(--font-display)', fontSize:18, letterSpacing:'0.1em', color:'white' }}>{proj.name}</span>
+              <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)' }}>{proj.client}</span>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:5 }}>
               <div style={{ width:170, flexShrink:0 }}/>
-              <div style={{ flex:1, height:18, borderRadius:2, background:'rgba(0,0,0,0.15)', position:'relative' }}>
+              <div style={{ flex:1, height:28, borderRadius:3, background:'rgba(0,0,0,0.15)', position:'relative' }}>
                 {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.6)',zIndex:3 }}/>}
                 {pt.map(t=>{const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l);return <div key={t.id} style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.6,borderRadius:2 }}/>})}
               </div>
@@ -821,9 +821,9 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
             {pt.map(t=>{
               const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l)
               return (
-                <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:3 }}>
-                  <div style={{ width:170, flexShrink:0, fontSize:10, color:'rgba(255,255,255,0.45)', paddingLeft:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
-                  <div style={{ flex:1, height:12, borderRadius:2, background:'rgba(0,0,0,0.1)', position:'relative' }}>
+                <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
+                  <div style={{ width:210, flexShrink:0, fontSize:13, color:'rgba(255,255,255,0.6)', paddingLeft:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
+                  <div style={{ flex:1, height:18, borderRadius:2, background:'rgba(0,0,0,0.1)', position:'relative' }}>
                     {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'rgba(255,255,255,0.5)',zIndex:3 }}/>}
                     <div style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.85,borderRadius:2 }}/>
                   </div>
