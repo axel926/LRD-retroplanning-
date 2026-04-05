@@ -68,3 +68,6 @@ input::placeholder { color: var(--text3); }
 select option { background: var(--bg); color: var(--text); }
 input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; }
 input[type="range"] { accent-color: var(--accent); cursor: pointer; width: 100%; }
+
+/* Force dark text everywhere on light bg */
+input, select, textarea, button { color: #0E0D0B; }

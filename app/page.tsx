@@ -689,11 +689,11 @@ export default function Home() {
 
                     {/* LANES */}
                     {!selectedProject ? (
-                      <div style={{ padding:'50px 0', textAlign:'center', color:'rgba(255,255,255,0.4)' }}>
+                      <div style={{ padding:'50px 0', textAlign:'center', color:'rgba(0,0,0,0.35)' }}>
                         <div style={{ fontFamily:'var(--font-display)', fontSize:18 }}>SÉLECTIONNER UN PROJET</div>
                       </div>
                     ) : sortedLanes.length === 0 ? (
-                      <div style={{ padding:'50px 0', textAlign:'center', color:'rgba(255,255,255,0.4)' }}>
+                      <div style={{ padding:'50px 0', textAlign:'center', color:'rgba(0,0,0,0.35)' }}>
                         <div style={{ fontFamily:'var(--font-display)', fontSize:18, marginBottom:8 }}>AUCUNE LIGNE</div>
                         <div style={{ fontSize:12, marginBottom:16 }}>Crée une ligne puis ajoute des blocs</div>
                         <button onClick={addLane} style={btnStyle('primary')}>+ CRÉER UNE LIGNE</button>
@@ -703,14 +703,14 @@ export default function Home() {
                         const laneTasks = projTasks.filter(t => t.lane_id === lane.id)
                         const isLaneDragging = draggingLaneId === lane.id
                         return (
-                          <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.1)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
+                          <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.08)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
                             {/* LANE LABEL */}
-                            <div style={{ width:160, flexShrink:0, background:'rgba(255,255,255,0.12)', borderRight:'1px solid rgba(255,255,255,0.15)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                            <div style={{ width:160, flexShrink:0, background:'rgba(0,0,0,0.04)', borderRight:'1px solid rgba(0,0,0,0.08)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
                               {/* DRAG HANDLE */}
                               <div
                                 className="lane-handle"
                                 onMouseDown={e => onLaneDragStart(e, lane.id, lane.sort_order)}
-                                style={{ cursor:'grab', color:'rgba(255,255,255,0.5)', fontSize:14, flexShrink:0, userSelect:'none', padding:'4px 2px' }}
+                                style={{ cursor:'grab', color:'rgba(0,0,0,0.3)', fontSize:14, flexShrink:0, userSelect:'none', padding:'4px 2px' }}
                                 title="Glisser pour réordonner"
                               >≡</div>
                               {/* EDITABLE NAME */}
@@ -723,13 +723,13 @@ export default function Home() {
                               {/* ADD BLOCK TO THIS LANE */}
                               <button
                                 onClick={e=>{ e.stopPropagation(); setLibraryTargetLane(lane.id); setShowLibrary(true) }}
-                                style={{ background:'none', border:'none', color:'rgba(255,255,255,0.6)', cursor:'pointer', fontSize:16, lineHeight:1, flexShrink:0, padding:'2px 4px' }}
+                                style={{ background:'none', border:'none', color:'rgba(0,0,0,0.35)', cursor:'pointer', fontSize:16, lineHeight:1, flexShrink:0, padding:'2px 4px' }}
                                 title="Ajouter un bloc"
                               >+</button>
                               {/* DELETE LANE */}
                               <button
                                 onClick={e=>{ e.stopPropagation(); removeLane(lane.id) }}
-                                style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:12, lineHeight:1, flexShrink:0 }}
+                                style={{ background:'none', border:'none', color:'rgba(0,0,0,0.3)', cursor:'pointer', fontSize:12, lineHeight:1, flexShrink:0 }}
                               >✕</button>
                             </div>
 
@@ -739,7 +739,7 @@ export default function Home() {
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
                               {todayPct>=0&&todayPct<=100&&(
-                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.8)',zIndex:4,pointerEvents:'none' }}/>
+                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(0,0,0,0.3)',zIndex:4,pointerEvents:'none' }}/>
                               )}
                               {laneTasks.map(task => {
                                 const l = Math.max(0, pctFromDate(task.start_date))
@@ -783,7 +783,7 @@ export default function Home() {
                     {selectedProject && (
                       <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.04)', minHeight:44 }}>
                         <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(255,255,255,0.06)', background:'var(--bg2)', display:'flex', alignItems:'center', padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
-                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(255,255,255,0.3)', borderRadius:2, color:'rgba(255,255,255,0.5)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
+                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(0,0,0,0.2)', borderRadius:2, color:'rgba(0,0,0,0.4)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
                         </div>
                         <div style={{ flex:1 }}/>
                       </div>
