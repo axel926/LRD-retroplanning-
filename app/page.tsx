@@ -144,6 +144,23 @@ export default function Home() {
   const [tProgress, setTProgress] = useState(0)
   const [tLane, setTLane] = useState('')
 
+  // Delete selected tasks with Backspace/Delete key
+  useEffect(() => {
+    const handler = async (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedTaskIds.size > 0) {
+        const active = document.activeElement
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return
+        for (const id of Array.from(selectedTaskIds)) {
+          await deleteTask(id)
+        }
+        setTasks(prev => prev.filter(t => !selectedTaskIds.has(t.id)))
+        setSelectedTaskIds(new Set())
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedTaskIds])
+
   const load = useCallback(async (projId?: string) => {
     setLoading(true)
     const [projs, tsks] = await Promise.all([getProjects(), getAllTasks()])
