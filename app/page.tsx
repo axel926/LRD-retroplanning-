@@ -522,7 +522,7 @@ export default function Home() {
     <div data-theme={theme} style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', background:'var(--bg)', color:'var(--text)' }}>
       {/* TOPBAR */}
       <div style={{ background:'#144947', borderBottom:'1px solid rgba(0,0,0,0.2)', padding:'0 24px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, zIndex:100 }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:26, letterSpacing:'0.12em', color:'var(--accent-light)' }}>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:26, letterSpacing:'0.12em', color:'white' }}>
           LA RÉPONSE D. <span style={{ color:'#9DD4D1' }}>·</span> RÉTRO
         </div>
         <div style={{ display:'flex', gap:8, alignItems:'center' }}>
@@ -533,7 +533,7 @@ export default function Home() {
               <button onClick={()=>setSelectedTaskIds(new Set())} style={{ ...btnStyle('ghost'), marginLeft:4, fontSize:10 }}>✕</button>
             </span>
           )}
-          <button onClick={()=>setTheme(t=>t==='light'?'dark':'light')} style={{ ...btnStyle('ghost'), fontSize:16, padding:'4px 10px' }} title="Mode sombre">{theme==='light'?'◐':'○'}</button>
+          <button onClick={()=>setTheme(t=>t==='light'?'dark':'light')} style={{ background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:2, color:'white', cursor:'pointer', fontSize:16, padding:'4px 10px' }} title="Mode sombre">{theme==='light'?'◐':'○'}</button>
           <button onClick={() => setShowProjModal(true)} style={btnStyle('primary')}>+ PROJET</button>
         </div>
       </div>
@@ -555,7 +555,7 @@ export default function Home() {
                   <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                     <div style={{ width:7,height:7,borderRadius:'50%',background:p.color,flexShrink:0 }}/>
                     <span style={{ fontWeight:500, fontSize:13, color:'#F2EDE4', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
-                    <span onClick={e=>{e.stopPropagation();handleDeleteProject(p.id)}} style={{ color:'rgba(255,255,255,0.2)', fontSize:11, cursor:'pointer' }}>✕</span>
+                    <span onClick={e=>{e.stopPropagation();handleDeleteProject(p.id)}} style={{ color:'rgba(255,255,255,0.4)', fontSize:11, cursor:'pointer' }}>✕</span>
                   </div>
                   <div style={{ fontSize:11, color:'rgba(255,255,255,0.45)', marginTop:2, paddingLeft:14 }}>{p.client}</div>
                   <div style={{ display:'flex', alignItems:'center', gap:5, marginTop:3, paddingLeft:14 }}>
@@ -597,12 +597,12 @@ export default function Home() {
             <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
               {/* TOOLBAR */}
               <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'var(--topbar)', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
-                <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'var(--accent-light)', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
+                <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
                   {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
                 </div>
-                <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid var(--border)', flexShrink:0 }}>
+                <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid rgba(255,255,255,0.3)', flexShrink:0 }}>
                   {(['day','week','month'] as ZoomLevel[]).map(z => (
-                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 10px', background:zoom===z?'var(--accent-light)':'transparent', color:zoom===z?'var(--topbar)':'var(--text)', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:13, borderLeft:z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
+                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 10px', background:zoom===z?'white':'transparent', color:zoom===z?'#144947':'white', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:13, borderLeft:z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
                       {z==='day'?'JOUR':z==='week'?'SEM.':'MOIS'}
                     </button>
                   ))}
@@ -632,11 +632,11 @@ export default function Home() {
                   <div style={{ minWidth:zoom==='day'?columns.length*44*ganttZoom+160:Math.max(860, 860*ganttZoom), display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
-                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'var(--sidebar)', borderBottom:'1px solid var(--border2)' }}>
+                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'rgba(0,0,0,0.1)', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
                         <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
                         <div style={{ flex:1, display:'flex' }}>
                           {weekGroups.map((wg,i) => (
-                            <div key={i} style={{ width:`${(wg.count/columns.length)*100}%`, height:20, display:'flex', alignItems:'center', paddingLeft:8, fontFamily:'var(--font-display)', fontSize:9, letterSpacing:'0.12em', color:'rgba(255,255,255,0.5)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', whiteSpace:'nowrap', overflow:'hidden' }}>{wg.label}</div>
+                            <div key={i} style={{ width:`${(wg.count/columns.length)*100}%`, height:20, display:'flex', alignItems:'center', paddingLeft:8, fontFamily:'var(--font-display)', fontSize:9, letterSpacing:'0.12em', color:'rgba(255,255,255,0.6)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', whiteSpace:'nowrap', overflow:'hidden' }}>{wg.label}</div>
                           ))}
                         </div>
                       </div>
@@ -644,11 +644,11 @@ export default function Home() {
                     {/* COL HEADER */}
                     <div style={{ display:'flex', position:'sticky', top:zoom==='day'?22:0, zIndex:10, background:'var(--topbar)', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
                       <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
-                        <div style={{ height:48, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'var(--text3)' }}>LIGNE / BLOC</div>
+                        <div style={{ height:48, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>LIGNE / BLOC</div>
                       </div>
                       <div style={{ flex:1, display:'flex' }}>
                         {columns.map((col,i) => (
-                          <div key={col.key} style={{ flex:1, height:48, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?15:13, color:col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background:col.isToday?'var(--accent)':'transparent', whiteSpace:'nowrap' }}>
+                          <div key={col.key} style={{ flex:1, height:48, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?15:13, color:col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background:col.isToday?'rgba(0,0,0,0.15)':'transparent', whiteSpace:'nowrap' }}>
                             <span style={{ fontWeight:col.isToday?700:400 }}>{col.label}</span>
                             {zoom!=='day'&&col.sublabel&&<span style={{ fontSize:9, opacity:0.5, marginTop:1 }}>{col.sublabel}</span>}
                           </div>
@@ -674,12 +674,12 @@ export default function Home() {
                         return (
                           <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.1)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
                             {/* LANE LABEL */}
-                            <div style={{ width:160, flexShrink:0, background:'var(--bg2)', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                            <div style={{ width:160, flexShrink:0, background:'rgba(255,255,255,0.12)', borderRight:'1px solid rgba(255,255,255,0.15)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
                               {/* DRAG HANDLE */}
                               <div
                                 className="lane-handle"
                                 onMouseDown={e => onLaneDragStart(e, lane.id, lane.sort_order)}
-                                style={{ cursor:'grab', color:'rgba(255,255,255,0.25)', fontSize:14, flexShrink:0, userSelect:'none', padding:'4px 2px' }}
+                                style={{ cursor:'grab', color:'rgba(255,255,255,0.5)', fontSize:14, flexShrink:0, userSelect:'none', padding:'4px 2px' }}
                                 title="Glisser pour réordonner"
                               >≡</div>
                               {/* EDITABLE NAME */}
@@ -692,13 +692,13 @@ export default function Home() {
                               {/* ADD BLOCK TO THIS LANE */}
                               <button
                                 onClick={e=>{ e.stopPropagation(); setLibraryTargetLane(lane.id); setShowLibrary(true) }}
-                                style={{ background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', fontSize:16, lineHeight:1, flexShrink:0, padding:'2px 4px' }}
+                                style={{ background:'none', border:'none', color:'rgba(255,255,255,0.6)', cursor:'pointer', fontSize:16, lineHeight:1, flexShrink:0, padding:'2px 4px' }}
                                 title="Ajouter un bloc"
                               >+</button>
                               {/* DELETE LANE */}
                               <button
                                 onClick={e=>{ e.stopPropagation(); removeLane(lane.id) }}
-                                style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:12, lineHeight:1, flexShrink:0 }}
+                                style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:12, lineHeight:1, flexShrink:0 }}
                               >✕</button>
                             </div>
 
@@ -708,7 +708,7 @@ export default function Home() {
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
                               {todayPct>=0&&todayPct<=100&&(
-                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'var(--accent)',zIndex:4,pointerEvents:'none' }}/>
+                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.8)',zIndex:4,pointerEvents:'none' }}/>
                               )}
                               {laneTasks.map(task => {
                                 const l = Math.max(0, pctFromDate(task.start_date))
@@ -752,7 +752,7 @@ export default function Home() {
                     {selectedProject && (
                       <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.04)', minHeight:44 }}>
                         <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(255,255,255,0.06)', background:'var(--bg2)', display:'flex', alignItems:'center', padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
-                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed var(--border)', borderRadius:2, color:'var(--text3)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
+                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(255,255,255,0.3)', borderRadius:2, color:'rgba(255,255,255,0.5)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
                         </div>
                         <div style={{ flex:1 }}/>
                       </div>
@@ -942,7 +942,7 @@ function FormRow({ label, children }:{ label:string, children:React.ReactNode })
 }
 
 function btnStyle(type:'primary'|'ghost'): React.CSSProperties {
-  return { fontFamily:'var(--font-display)', fontSize:15, padding:'10px 20px', borderRadius:2, border:type==='ghost'?`1.5px solid var(--border)`:'none', background:type==='primary'?'var(--accent)':'transparent', color:type==='primary'?'var(--bg)':'var(--text)', cursor:'pointer', letterSpacing:'0.08em' }
+  return { fontFamily:'var(--font-display)', fontSize:15, padding:'10px 20px', borderRadius:2, border:type==='ghost'?'1.5px solid rgba(255,255,255,0.5)':'none', background:type==='primary'?'white':'transparent', color:type==='primary'?'#144947':'white', cursor:'pointer', letterSpacing:'0.08em' }
 }
 
-const navBtnStyle: React.CSSProperties = { width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:2, cursor:'pointer', fontSize:17, color:'var(--text)' }
+const navBtnStyle: React.CSSProperties = { width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:2, cursor:'pointer', fontSize:17, color:'white' }
