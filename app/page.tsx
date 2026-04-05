@@ -573,9 +573,9 @@ export default function Home() {
                   <div style={{ fontFamily:'var(--font-display)', fontSize:10, minWidth:140, textAlign:'center', color:'white' }}>{anchorLabel}</div>
                   <button onClick={()=>shiftAnchor(1)} style={navBtnStyle}>›</button>
                   <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }}>AUJ.</button>
-                  <button onClick={()=>setGanttZoom(1)} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Réinitialiser zoom">1:1</button>
-                  <button onClick={()=>setGanttZoom(z=>Math.min(3,z+0.25))} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom +">+</button>
-                  <button onClick={()=>setGanttZoom(z=>Math.max(0.3,z-0.25))} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom -">−</button>
+                  <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(1)}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Réinitialiser zoom">1:1</button>
+                  <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(z=>Math.min(3,z+0.25))}} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom +">+</button>
+                  <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(z=>Math.max(0.3,z-0.25))}} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom -">−</button>
                 </div>
                 {selectedProject && (
                   <>
