@@ -686,7 +686,7 @@ export default function Home() {
                               <input
                                 value={lane.name}
                                 onChange={e => renameLane(lane.id, e.target.value)}
-                                style={{ background:'transparent', border:'none', outline:'none', color:'white', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', flex:1, cursor:'text', color:'var(--text)' }}
+                                style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', flex:1, cursor:'text' }}
                                 onClick={e => e.stopPropagation()}
                               />
                               {/* ADD BLOCK TO THIS LANE */}
