@@ -5,8 +5,9 @@ import {
   supabase, getProjects, createProject, deleteProject,
   getLanes, createLane, updateLane, deleteLane,
   getAllTasks, createTask, updateTask, deleteTask,
+  getAttachments, addAttachment, deleteAttachment, uploadFile,
   BLOCK_LIBRARY, PROJ_COLORS, TASK_COLORS,
-  type Project, type Lane, type Task,
+  type Project, type Lane, type Task, type Attachment,
 } from '@/lib/supabase'
 
 const MONTHS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
@@ -110,6 +111,10 @@ export default function Home() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set())
   const [libraryTargetLane, setLibraryTargetLane] = useState<string | null>(null)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [newUrl, setNewUrl] = useState('')
+  const [newUrlName, setNewUrlName] = useState('')
+  const [uploadingFile, setUploadingFile] = useState(false)
 
   // Lasso
   const [lasso, setLasso] = useState<{x:number,y:number,w:number,h:number} | null>(null)
@@ -460,8 +465,10 @@ export default function Home() {
     if (selectedId === id) setSelectedId(projects.find(p => p.id !== id)?.id || null)
   }
 
-  function openEditTask(task: Task) {
+  async function openEditTask(task: Task) {
     setEditingTask(task)
+    const atts = await getAttachments(task.id)
+    setAttachments(atts)
     setTProject(task.project_id)
     setTName(task.name)
     setTColor(task.color || TASK_COLORS[0])
@@ -478,6 +485,30 @@ export default function Home() {
     await updateTask(editingTask.id, payload)
     setTasks(prev => prev.map(t => t.id === editingTask.id ? { ...t, ...payload } : t))
     setShowTaskModal(false)
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!editingTask || !e.target.files?.[0]) return
+    setUploadingFile(true)
+    try {
+      const file = e.target.files[0]
+      const url = await uploadFile(file, editingTask.id)
+      const att = await addAttachment({ task_id: editingTask.id, type: 'file', name: file.name, url })
+      setAttachments(prev => [...prev, att])
+    } catch(err) { console.error(err) }
+    setUploadingFile(false)
+  }
+
+  async function handleAddUrl() {
+    if (!editingTask || !newUrl.trim()) return
+    const att = await addAttachment({ task_id: editingTask.id, type: 'url', name: newUrlName || newUrl, url: newUrl })
+    setAttachments(prev => [...prev, att])
+    setNewUrl(''); setNewUrlName('')
+  }
+
+  async function handleDeleteAttachment(id: string) {
+    await deleteAttachment(id)
+    setAttachments(prev => prev.filter(a => a.id !== id))
   }
 
   async function handleDeleteTask() {

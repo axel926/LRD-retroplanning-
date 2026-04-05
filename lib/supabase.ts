@@ -87,3 +87,35 @@ export async function updateTask(id: string, updates: Partial<Task>) {
 export async function deleteTask(id: string) {
   await supabase.from('tasks').delete().eq('id', id)
 }
+
+export type Attachment = {
+  id: string
+  task_id: string
+  type: 'file' | 'url'
+  name: string
+  url: string
+}
+
+export async function getAttachments(taskId: string): Promise<Attachment[]> {
+  const { data } = await supabase.from('attachments').select('*').eq('task_id', taskId).order('created_at', { ascending: true })
+  return data || []
+}
+
+export async function addAttachment(a: Omit<Attachment, 'id'>): Promise<Attachment> {
+  const { data, error } = await supabase.from('attachments').insert(a).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteAttachment(id: string) {
+  await supabase.from('attachments').delete().eq('id', id)
+}
+
+export async function uploadFile(file: File, taskId: string): Promise<string> {
+  const ext = file.name.split('.').pop()
+  const path = `${taskId}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage.from('attachments').upload(path, file, { upsert: true })
+  if (error) throw error
+  const { data } = supabase.storage.from('attachments').getPublicUrl(path)
+  return data.publicUrl
+}
