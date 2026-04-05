@@ -250,7 +250,7 @@ export default function Home() {
     // Build selection
     let ids: string[]
     if (selectedTaskIds.has(taskId)) {
-      ids = [...selectedTaskIds]
+      ids = Array.from(selectedTaskIds)
     } else {
       if (!e.shiftKey) setSelectedTaskIds(new Set([taskId]))
       ids = [taskId]
