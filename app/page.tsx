@@ -168,27 +168,32 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handler)
   }, [selectedTaskIds])
 
+  const selectedIdRef = useRef<string|null>(null)
+  selectedIdRef.current = selectedId
+
   const load = useCallback(async (projId?: string) => {
-    setLoading(true)
     const [projs, tsks] = await Promise.all([getProjects(), getAllTasks()])
     setProjects(projs)
     setTasks(tsks)
-    const pid = projId || selectedId || projs[0]?.id
+    const pid = projId || selectedIdRef.current || projs[0]?.id
     if (pid) {
       setSelectedId(pid)
       const ls = await getLanes(pid)
       setLanes(ls)
     }
     setLoading(false)
-  }, [selectedId])
+  }, [])
 
   useEffect(() => { load() }, [])
 
-  // Refresh toutes les 5 secondes pour garder la synchro
+  // Refresh toutes les 5 secondes
   useEffect(() => {
-    const interval = setInterval(() => { load() }, 5000)
+    const interval = setInterval(async () => {
+      const tsks = await getAllTasks()
+      setTasks(tsks)
+    }, 3000)
     return () => clearInterval(interval)
-  }, [load])
+  }, [])
 
   useEffect(() => {
     const ch = supabase.channel('lrd-changes')
