@@ -184,6 +184,12 @@ export default function Home() {
 
   useEffect(() => { load() }, [])
 
+  // Refresh toutes les 5 secondes pour garder la synchro
+  useEffect(() => {
+    const interval = setInterval(() => { load() }, 5000)
+    return () => clearInterval(interval)
+  }, [load])
+
   useEffect(() => {
     const ch = supabase.channel('lrd-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => load())
@@ -445,6 +451,7 @@ export default function Home() {
     }
     const t = await createTask({ project_id: selectedId, lane_id: laneId, name: blockName, category: catName, subcategory: null, color: catColor, start_date: startDate, end_date: addDays(startDate, 7), progress: 0 })
     setTasks(prev => [...prev, t])
+    await load()
   }
 
   async function handleCreateProject() {
