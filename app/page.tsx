@@ -692,8 +692,9 @@ export default function Home() {
                                     onContextMenu={e => { e.preventDefault(); e.stopPropagation(); openEditTask(task) }}
                                     style={{ position:'absolute', height:34, top:'50%', transform:'translateY(-50%)', left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 8px', fontSize:12, fontWeight:500, color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:isSelected?3:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSelected?'2px solid white':'none', boxShadow:isSelected?'0 0 0 2px rgba(255,255,255,0.4)':'none' }}
                                   >
-                                    <div style={{ position:'absolute',left:0,top:0,bottom:0,width:`${task.progress}%`,background:'rgba(0,0,0,0.2)',borderRadius:'2px 0 0 2px',pointerEvents:'none' }}/>
+                                    <div style={{ position:'absolute',left:0,bottom:0,height:3,width:`${task.progress}%`,background:'rgba(255,255,255,0.6)',borderRadius:'0 0 0 2px',pointerEvents:'none',zIndex:3 }}/>
                                     <span style={{ position:'relative',zIndex:1 }}>{task.name}</span>
+                                    {task.progress > 0 && <span style={{ position:'absolute', right:10, fontSize:9, opacity:0.7, zIndex:1 }}>{task.progress}%</span>}
                                     <div
                                       className="resize-h"
                                       onMouseDown={e=>{ e.stopPropagation(); onMouseDownBar(e, task.id, true) }}
@@ -795,6 +796,11 @@ export default function Home() {
           </div>
           <FormRow label="COULEUR"><ColorPicker colors={TASK_COLORS} selected={tColor} onSelect={setTColor}/></FormRow>
           <FormRow label={`AVANCEMENT · ${tProgress}%`}>
+            <div style={{ display:'flex', gap:6, marginBottom:8 }}>
+              {[0,25,50,75,100].map(v => (
+                <button key={v} onMouseDown={e=>{e.stopPropagation();setTProgress(v)}} style={{ flex:1, padding:'6px 0', background: tProgress===v ? '#9DD4D1' : 'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', borderRadius:2, color: tProgress===v ? '#0A2A29' : 'white', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.05em' }}>{v}%</button>
+              ))}
+            </div>
             <input type="range" min={0} max={100} value={tProgress} onChange={e=>setTProgress(Number(e.target.value))} style={{ width:'100%', accentColor:'#9DD4D1', cursor:'pointer' }}/>
           </FormRow>
           <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:20 }}>
