@@ -391,8 +391,14 @@ export default function Home() {
         laneId = lanes[0].id
       }
     }
-    const today = toIso(new Date())
-    const t = await createTask({ project_id: selectedId, lane_id: laneId, name: blockName, category: catName, subcategory: null, color: catColor, start_date: today, end_date: addDays(today, 7), progress: 0 })
+    // Place after last block on this lane
+    const laneTasks = tasks.filter(t => t.lane_id === laneId)
+    let startDate = toIso(new Date())
+    if (laneTasks.length > 0) {
+      const lastEnd = laneTasks.reduce((max, t) => t.end_date > max ? t.end_date : max, laneTasks[0].end_date)
+      startDate = lastEnd
+    }
+    const t = await createTask({ project_id: selectedId, lane_id: laneId, name: blockName, category: catName, subcategory: null, color: catColor, start_date: startDate, end_date: addDays(startDate, 7), progress: 0 })
     setTasks(prev => [...prev, t])
   }
 
