@@ -216,19 +216,20 @@ export default function Home() {
   function onLaneDragMove(e: MouseEvent) {
     if (!laneDragRef.current) return
     const dy = e.clientY - laneDragRef.current.startY
-    const rowH = 52
+    const rowH = 58
     const delta = Math.round(dy / rowH)
     if (delta === 0) return
-    const newOrder = Math.max(0, laneDragRef.current.currentOrder + delta)
     setLanes(prev => {
       const sorted = [...prev].sort((a,b) => a.sort_order - b.sort_order)
       const idx = sorted.findIndex(l => l.id === laneDragRef.current!.laneId)
       if (idx < 0) return prev
       const newIdx = Math.max(0, Math.min(sorted.length-1, idx + delta))
+      if (newIdx === idx) return prev
       const moved = sorted.splice(idx, 1)[0]
       sorted.splice(newIdx, 0, moved)
       return sorted.map((l, i) => ({ ...l, sort_order: i }))
     })
+    laneDragRef.current.startY = e.clientY
   }
 
   async function onLaneDragEnd() {
@@ -269,7 +270,7 @@ export default function Home() {
 
     blockDragRef.current = { taskIds: ids, type: isResize ? 'resize' : 'move', startX: e.clientX, areaWidth: rect.width, totalDays, origStarts, origEnds, dur, resizeTaskId: isResize ? taskId : undefined }
     window.addEventListener('mousemove', onBlockDragMove)
-    window.addEventListener('mouseup', onBlockDragEnd)
+    window.addEventListener('mouseup', (e) => onBlockDragEnd(e))
   }
 
   function onBlockDragMove(e: MouseEvent) {
@@ -298,15 +299,26 @@ export default function Home() {
     }))
   }
 
-  async function onBlockDragEnd() {
+  async function onBlockDragEnd(e?: MouseEvent) {
     const d = blockDragRef.current
     blockDragRef.current = null
     window.removeEventListener('mousemove', onBlockDragMove)
     window.removeEventListener('mouseup', onBlockDragEnd)
     if (!d) return
+    // Check if dropped on a different lane
+    const el = e ? document.elementFromPoint(e.clientX, e.clientY) : null
+    const laneEl = el?.closest('[data-lane-id]') as HTMLElement | null
+    const newLaneId = laneEl?.dataset.laneId
     for (const id of d.taskIds) {
       const task = tasks.find(t => t.id === id)
-      if (task) await updateTask(task.id, { start_date: task.start_date, end_date: task.end_date })
+      if (task) {
+        const updates: Record<string,unknown> = { start_date: task.start_date, end_date: task.end_date }
+        if (newLaneId && newLaneId !== task.lane_id) {
+          updates.lane_id = newLaneId
+          setTasks(prev => prev.map(t => t.id === id ? { ...t, lane_id: newLaneId } : t))
+        }
+        await updateTask(task.id, updates)
+      }
     }
   }
 
@@ -565,7 +577,7 @@ export default function Home() {
 
               <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
                 {/* GANTT */}
-                <div ref={ganttRef} style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }} onMouseDown={onGanttMouseDown}>
+                <div ref={ganttRef} style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }} onMouseDown={e => { onGanttMouseDown(e); if (!(e.target as HTMLElement).closest('.library-panel')) setShowLibrary(false) }}>
                   <div style={{ minWidth:zoom==='day'?columns.length*44+160:860, display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
@@ -640,7 +652,7 @@ export default function Home() {
                             </div>
 
                             {/* BARS AREA */}
-                            <div className="bars-area" style={{ flex:1, position:'relative', minHeight:52 }}>
+                            <div className="bars-area" data-lane-id={lane.id} style={{ flex:1, position:'relative', minHeight:52 }}>
                               {columns.map((col,i) => (
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
