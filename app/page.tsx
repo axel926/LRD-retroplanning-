@@ -122,6 +122,7 @@ export default function Home() {
 
   // Block drag
   const hoveredLaneRef = useRef<string|null>(null)
+  const [ganttZoom, setGanttZoom] = useState(1)
   const [dropLaneHighlight, setDropLaneHighlight] = useState<string|null>(null)
   const blockDragRef = useRef<{
     taskIds: string[], type: 'move'|'resize',
