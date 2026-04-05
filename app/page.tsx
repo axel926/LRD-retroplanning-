@@ -806,7 +806,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
         <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
       </div>
       <div style={{ display:'flex', paddingLeft:212, marginBottom:10 }}>
-        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.1em', color:'rgba(255,255,255,0.8)', textAlign:'center', fontFamily:'var(--font-display)' }}>{m}</div>)}
+        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.1em', color:'rgba(255,255,255,0.8)', textAlign:'center' }}>{m}</div>)}
       </div>
       {projects.map(proj => {
         const pt = tasks.filter(t=>t.project_id===proj.id)
