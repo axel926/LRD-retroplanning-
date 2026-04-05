@@ -343,7 +343,7 @@ export default function Home() {
     // Find tasks whose bars overlap lasso rect
     const bars = ganttRef.current.querySelectorAll('.gantt-bar[data-task-id]')
     const lassoRect = ganttRef.current.getBoundingClientRect()
-    const sel = new Set<string>(e.shiftKey ? [...selectedTaskIds] : [])
+    const sel = new Set<string>(e.shiftKey ? Array.from(selectedTaskIds) : [])
     bars.forEach(bar => {
       const br = bar.getBoundingClientRect()
       const bx = br.left - lassoRect.left
