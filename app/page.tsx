@@ -615,7 +615,7 @@ export default function Home() {
           </div>
           <div style={{ display:'flex', borderTop:'1px solid var(--border)', flexShrink:0, background:'var(--sidebar)' }}>
             {(['gantt','overview'] as View[]).map(v => (
-              <div key={v} onClick={() => setView(v)} style={{ flex:1, textAlign:'center', padding:'10px 0', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.1em', cursor:'pointer', color:view===v?'var(--accent-light)':'rgba(255,255,255,0.4)', borderTop:`2px solid ${view===v?'var(--accent-light)':'transparent'}` }}>
+              <div key={v} onClick={() => { setView(v); if(v==='overview') load() }} style={{ flex:1, textAlign:'center', padding:'10px 0', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.1em', cursor:'pointer', color:view===v?'var(--accent-light)':'rgba(255,255,255,0.4)', borderTop:`2px solid ${view===v?'var(--accent-light)':'transparent'}` }}>
                 {v === 'gantt' ? 'GANTT' : 'ANNUEL'}
               </div>
             ))}
