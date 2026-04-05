@@ -94,6 +94,7 @@ function snapDays(taskId: string, newStart: string, newEnd: string, allTasks: Ta
 }
 
 export default function Home() {
+  const [theme, setTheme] = useState<'light'|'dark'>('light')
   const [projects, setProjects] = useState<Project[]>([])
   const [lanes, setLanes] = useState<Lane[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
@@ -518,10 +519,10 @@ export default function Home() {
     : `${MONTHS_FULL[columns[0]?.start.getMonth()]} — ${MONTHS_FULL[columns[columns.length-1]?.start.getMonth()]} ${columns[columns.length-1]?.start.getFullYear()}`
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
+    <div data-theme={theme} style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', background:'var(--bg)', color:'var(--text)' }}>
       {/* TOPBAR */}
       <div style={{ background:'#144947', borderBottom:'1px solid rgba(0,0,0,0.2)', padding:'0 24px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, zIndex:100 }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:26, letterSpacing:'0.12em', color:'white' }}>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:26, letterSpacing:'0.12em', color:'var(--accent-light)' }}>
           LA RÉPONSE D. <span style={{ color:'#9DD4D1' }}>·</span> RÉTRO
         </div>
         <div style={{ display:'flex', gap:8, alignItems:'center' }}>
@@ -532,13 +533,14 @@ export default function Home() {
               <button onClick={()=>setSelectedTaskIds(new Set())} style={{ ...btnStyle('ghost'), marginLeft:4, fontSize:10 }}>✕</button>
             </span>
           )}
-          <button onClick={() => setShowProjModal(true)} style={btnStyle('ghost')}>+ PROJET</button>
+          <button onClick={()=>setTheme(t=>t==='light'?'dark':'light')} style={{ ...btnStyle('ghost'), fontSize:16, padding:'4px 10px' }} title="Mode sombre">{theme==='light'?'◐':'○'}</button>
+          <button onClick={() => setShowProjModal(true)} style={btnStyle('primary')}>+ PROJET</button>
         </div>
       </div>
 
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
         {/* SIDEBAR */}
-        <div style={{ width:260, flexShrink:0, background:'#144947', borderRight:'1px solid rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ width:260, flexShrink:0, background:'var(--sidebar)', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
           <div style={{ padding:'14px 12px 8px', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.2em', color:'#9DD4D1', marginBottom:10 }}>PROJETS</div>
           </div>
@@ -549,10 +551,10 @@ export default function Home() {
               const avg = pt.length ? Math.round(pt.reduce((a,t)=>a+t.progress,0)/pt.length) : 0
               const active = p.id === selectedId
               return (
-                <div key={p.id} onClick={() => selectProject(p.id)} style={{ padding:'9px 10px', borderRadius:3, cursor:'pointer', marginBottom:2, border:`1.5px solid ${active?'#9DD4D1':'transparent'}`, background:active?'rgba(255,255,255,0.1)':'transparent' }}>
+                <div key={p.id} onClick={() => selectProject(p.id)} style={{ padding:'9px 10px', borderRadius:3, cursor:'pointer', marginBottom:2, border:`1.5px solid ${active?'var(--accent-light)':'transparent'}`, background:active?'rgba(255,255,255,0.08)':'transparent' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                     <div style={{ width:7,height:7,borderRadius:'50%',background:p.color,flexShrink:0 }}/>
-                    <span style={{ fontWeight:500, fontSize:13, color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
+                    <span style={{ fontWeight:500, fontSize:13, color:'var(--text)', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
                     <span onClick={e=>{e.stopPropagation();handleDeleteProject(p.id)}} style={{ color:'rgba(255,255,255,0.2)', fontSize:11, cursor:'pointer' }}>✕</span>
                   </div>
                   <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', marginTop:2, paddingLeft:14 }}>{p.client}</div>
@@ -580,9 +582,9 @@ export default function Home() {
               )
             })}
           </div>
-          <div style={{ display:'flex', borderTop:'1px solid rgba(255,255,255,0.08)', flexShrink:0 }}>
+          <div style={{ display:'flex', borderTop:'1px solid var(--border)', flexShrink:0, background:'var(--sidebar)' }}>
             {(['gantt','overview'] as View[]).map(v => (
-              <div key={v} onClick={() => setView(v)} style={{ flex:1, textAlign:'center', padding:'10px 0', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.1em', cursor:'pointer', color:view===v?'white':'rgba(255,255,255,0.4)', borderTop:`2px solid ${view===v?'#9DD4D1':'transparent'}` }}>
+              <div key={v} onClick={() => setView(v)} style={{ flex:1, textAlign:'center', padding:'10px 0', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.1em', cursor:'pointer', color:view===v?'var(--accent-light)':'var(--text3)', borderTop:`2px solid ${view===v?'var(--accent-light)':'transparent'}` }}>
                 {v === 'gantt' ? 'GANTT' : 'ANNUEL'}
               </div>
             ))}
@@ -590,17 +592,17 @@ export default function Home() {
         </div>
 
         {/* MAIN */}
-        <div style={{ flex:1, display:'flex', overflow:'hidden', background:'#0F3635' }}>
+        <div style={{ flex:1, display:'flex', overflow:'hidden', background:'var(--bg)' }}>
           {view === 'gantt' ? (
             <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
               {/* TOOLBAR */}
-              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'#0A2A29', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
-                <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'var(--topbar)', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
+                <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'var(--accent-light)', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
                   {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
                 </div>
-                <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid rgba(255,255,255,0.2)', flexShrink:0 }}>
+                <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid var(--border)', flexShrink:0 }}>
                   {(['day','week','month'] as ZoomLevel[]).map(z => (
-                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 10px', background:zoom===z?'white':'transparent', color:zoom===z?'#144947':'white', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:13, borderLeft:z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
+                    <button key={z} onClick={()=>setZoom(z)} style={{ padding:'5px 10px', background:zoom===z?'var(--accent-light)':'transparent', color:zoom===z?'var(--topbar)':'var(--text)', border:'none', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:13, borderLeft:z!=='day'?'1px solid rgba(255,255,255,0.2)':'none' }}>
                       {z==='day'?'JOUR':z==='week'?'SEM.':'MOIS'}
                     </button>
                   ))}
@@ -630,7 +632,7 @@ export default function Home() {
                   <div style={{ minWidth:zoom==='day'?columns.length*44*ganttZoom+160:Math.max(860, 860*ganttZoom), display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
-                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'#092928', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'var(--sidebar)', borderBottom:'1px solid var(--border2)' }}>
                         <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
                         <div style={{ flex:1, display:'flex' }}>
                           {weekGroups.map((wg,i) => (
@@ -640,13 +642,13 @@ export default function Home() {
                       </div>
                     )}
                     {/* COL HEADER */}
-                    <div style={{ display:'flex', position:'sticky', top:zoom==='day'?22:0, zIndex:10, background:'#0A2A29', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
+                    <div style={{ display:'flex', position:'sticky', top:zoom==='day'?22:0, zIndex:10, background:'var(--topbar)', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
                       <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
-                        <div style={{ height:48, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>LIGNE / BLOC</div>
+                        <div style={{ height:48, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'var(--text3)' }}>LIGNE / BLOC</div>
                       </div>
                       <div style={{ flex:1, display:'flex' }}>
                         {columns.map((col,i) => (
-                          <div key={col.key} style={{ flex:1, height:48, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?15:13, color:col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background:col.isToday?'rgba(255,255,255,0.18)':'transparent', whiteSpace:'nowrap' }}>
+                          <div key={col.key} style={{ flex:1, height:48, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?15:13, color:col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background:col.isToday?'var(--accent)':'transparent', whiteSpace:'nowrap' }}>
                             <span style={{ fontWeight:col.isToday?700:400 }}>{col.label}</span>
                             {zoom!=='day'&&col.sublabel&&<span style={{ fontSize:9, opacity:0.5, marginTop:1 }}>{col.sublabel}</span>}
                           </div>
@@ -672,7 +674,7 @@ export default function Home() {
                         return (
                           <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.1)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
                             {/* LANE LABEL */}
-                            <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)', background:'#0A2A29', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                            <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)', background:'var(--bg2)', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
                               {/* DRAG HANDLE */}
                               <div
                                 className="lane-handle"
@@ -684,7 +686,7 @@ export default function Home() {
                               <input
                                 value={lane.name}
                                 onChange={e => renameLane(lane.id, e.target.value)}
-                                style={{ background:'transparent', border:'none', outline:'none', color:'white', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', flex:1, cursor:'text' }}
+                                style={{ background:'transparent', border:'none', outline:'none', color:'white', fontSize:13, fontWeight:500, fontFamily:'var(--font-body)', flex:1, cursor:'text', color:'var(--text)' }}
                                 onClick={e => e.stopPropagation()}
                               />
                               {/* ADD BLOCK TO THIS LANE */}
@@ -706,7 +708,7 @@ export default function Home() {
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
                               {todayPct>=0&&todayPct<=100&&(
-                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.7)',zIndex:4,pointerEvents:'none' }}/>
+                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'var(--accent)',zIndex:4,pointerEvents:'none' }}/>
                               )}
                               {laneTasks.map(task => {
                                 const l = Math.max(0, pctFromDate(task.start_date))
@@ -749,8 +751,8 @@ export default function Home() {
 
                     {selectedProject && (
                       <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.04)', minHeight:44 }}>
-                        <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(255,255,255,0.06)', background:'#0A2A29', display:'flex', alignItems:'center', padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
-                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(255,255,255,0.2)', borderRadius:2, color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
+                        <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(255,255,255,0.06)', background:'var(--bg2)', display:'flex', alignItems:'center', padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed var(--border)', borderRadius:2, color:'var(--text3)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
                         </div>
                         <div style={{ flex:1 }}/>
                       </div>
@@ -763,12 +765,12 @@ export default function Home() {
 
                 {/* LIBRARY PANEL */}
                 {showLibrary && (
-                  <div style={{ width:250, flexShrink:0, background:'#144947', borderLeft:'1px solid rgba(0,0,0,0.2)', overflowY:'auto', display:'flex', flexDirection:'column' }}>
-                    <div style={{ padding:'12px 14px 8px', borderBottom:'1px solid rgba(255,255,255,0.08)', position:'sticky', top:0, background:'#144947', zIndex:5 }}>
-                      <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'#9DD4D1' }}>
+                  <div style={{ width:250, flexShrink:0, background:'var(--surface)', borderLeft:'1px solid var(--border)', overflowY:'auto', display:'flex', flexDirection:'column' }}>
+                    <div style={{ padding:'12px 14px 8px', borderBottom:'1px solid var(--border)', position:'sticky', top:0, background:'var(--surface)', zIndex:5 }}>
+                      <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'var(--accent)' }}>
                         {libraryTargetLane ? `→ ${lanes.find(l=>l.id===libraryTargetLane)?.name||'LIGNE'}` : 'AJOUTER UN BLOC'}
                       </div>
-                      <div style={{ fontSize:10, color:'rgba(255,255,255,0.3)', marginTop:3 }}>Clic = ajouté à aujourd'hui</div>
+                      <div style={{ fontSize:10, color:'var(--text3)', marginTop:3 }}>Clic = ajouté à aujourd'hui</div>
                     </div>
                     <div style={{ padding:'8px' }}>
                       {BLOCK_LIBRARY.map(cat => (
@@ -779,7 +781,7 @@ export default function Home() {
                           </div>
                           {cat.blocks.map(block => (
                             <button key={block} onClick={() => addBlockFromLibrary(block, cat.color, cat.category)}
-                              style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', background:'rgba(255,255,255,0.05)', border:'1px solid transparent', borderRadius:3, cursor:'pointer', textAlign:'left', color:'white', fontSize:11, fontFamily:'var(--font-body)', width:'100%', marginBottom:2 }}
+                              style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', background:'var(--bg2)', border:'1px solid transparent', borderRadius:3, cursor:'pointer', textAlign:'left', color:'var(--text)', fontSize:11, fontFamily:'var(--font-body)', width:'100%', marginBottom:2 }}
                               onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor=cat.color }}
                               onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor='transparent' }}
                             >
@@ -835,7 +837,7 @@ export default function Home() {
           <FormRow label={`AVANCEMENT · ${tProgress}%`}>
             <div style={{ display:'flex', gap:6, marginBottom:8 }}>
               {[0,25,50,75,100].map(v => (
-                <button key={v} onMouseDown={e=>{e.stopPropagation();setTProgress(v)}} style={{ flex:1, padding:'6px 0', background: tProgress===v ? '#9DD4D1' : 'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', borderRadius:2, color: tProgress===v ? '#0A2A29' : 'white', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.05em' }}>{v}%</button>
+                <button key={v} onMouseDown={e=>{e.stopPropagation();setTProgress(v)}} style={{ flex:1, padding:'6px 0', background: tProgress===v ? 'var(--accent)' : 'var(--bg2)', border:'1px solid var(--border)', borderRadius:2, color: tProgress===v ? 'var(--bg)' : 'var(--text)', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.05em' }}>{v}%</button>
               ))}
             </div>
             <input type="range" min={0} max={100} value={tProgress} onChange={e=>setTProgress(Number(e.target.value))} style={{ width:'100%', accentColor:'#9DD4D1', cursor:'pointer' }}/>
@@ -874,14 +876,14 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
   const todayPct = new Date().getFullYear()===year ? pct(toIso(new Date())) : -1
   const MS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
   return (
-    <div style={{ flex:1, overflowY:'auto', padding:32, background:'#0A2A29' }}>
+    <div style={{ flex:1, overflowY:'auto', padding:32, background:'var(--bg)' }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
         <button onClick={()=>onYearChange(year-1)} style={navBtnStyle}>‹</button>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:42, letterSpacing:'0.06em', color:'white' }}>VUE <span style={{color:'#144947'}}>{year}</span></div>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:42, letterSpacing:'0.06em', color:'var(--text)' }}>VUE <span style={{color:'var(--accent)'}}>{year}</span></div>
         <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
       </div>
       <div style={{ display:'flex', paddingLeft:212, marginBottom:10 }}>
-        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.1em', color:'rgba(255,255,255,0.8)', textAlign:'center' }}>{m}</div>)}
+        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.1em', color:'var(--text2)', textAlign:'center' }}>{m}</div>)}
       </div>
       {projects.map(proj => {
         const pt = tasks.filter(t=>t.project_id===proj.id)
@@ -889,7 +891,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
           <div key={proj.id} style={{ marginBottom:82 }}>
             <div onClick={()=>onSelectProject(proj.id)} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8, cursor:'pointer' }}>
               <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
-              <span style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em', color:'white', fontWeight:600 }}>{proj.name}</span>
+              <span style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em', color:'var(--text)', fontWeight:600 }}>{proj.name}</span>
               <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)' }}>{proj.client}</span>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:5 }}>
@@ -903,7 +905,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
               const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l)
               return (
                 <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                  <div style={{ width:210, flexShrink:0, fontSize:13, color:'rgba(255,255,255,0.85)', paddingLeft:16, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
+                  <div style={{ width:210, flexShrink:0, fontSize:13, color:'var(--text2)', paddingLeft:16, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
                   <div style={{ flex:1, height:28, borderRadius:2, background:'rgba(255,255,255,0.05)', position:'relative', border:'1px solid rgba(255,255,255,0.06)' }}>
                     {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'rgba(255,255,255,0.5)',zIndex:3 }}/>}
                     <div style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:1,borderRadius:2,display:'flex',alignItems:'center',padding:'0 6px',overflow:'hidden' }}/>
@@ -921,9 +923,9 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
 function Modal({ onClose, title, children }:{ onClose:()=>void, title:string, children:React.ReactNode }) {
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{ position:'fixed',inset:0,background:'rgba(14,45,44,0.7)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center' }}>
-      <div style={{ background:'#144947',border:'1px solid #1E6B68',borderRadius:4,width:440,maxWidth:'95vw',padding:26,position:'relative',maxHeight:'90vh',overflowY:'auto' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:12,right:12,background:'none',border:'none',color:'rgba(255,255,255,0.35)',fontSize:18,cursor:'pointer' }}>✕</button>
-        <div style={{ fontFamily:'var(--font-display)',fontSize:20,letterSpacing:'0.1em',color:'white',marginBottom:20 }}>{title}</div>
+      <div style={{ background:'var(--surface)',border:'1px solid var(--border)',borderRadius:4,width:440,maxWidth:'95vw',padding:26,position:'relative',maxHeight:'90vh',overflowY:'auto' }}>
+        <button onClick={onClose} style={{ position:'absolute',top:12,right:12,background:'none',border:'none',color:'var(--text3)',fontSize:18,cursor:'pointer' }}>✕</button>
+        <div style={{ fontFamily:'var(--font-display)',fontSize:20,letterSpacing:'0.1em',color:'var(--text)',marginBottom:20 }}>{title}</div>
         {children}
       </div>
     </div>
@@ -933,14 +935,14 @@ function Modal({ onClose, title, children }:{ onClose:()=>void, title:string, ch
 function FormRow({ label, children }:{ label:string, children:React.ReactNode }) {
   return (
     <div style={{ marginBottom:13 }}>
-      <label style={{ display:'block',fontFamily:'var(--font-display)',fontSize:10,letterSpacing:'0.18em',color:'#9DD4D1',marginBottom:5 }}>{label}</label>
+      <label style={{ display:'block',fontFamily:'var(--font-display)',fontSize:10,letterSpacing:'0.18em',color:'var(--accent)',marginBottom:5 }}>{label}</label>
       {children}
     </div>
   )
 }
 
 function btnStyle(type:'primary'|'ghost'): React.CSSProperties {
-  return { fontFamily:'var(--font-display)', fontSize:15, padding:'10px 20px', borderRadius:2, border:type==='ghost'?'1.5px solid rgba(255,255,255,0.25)':'none', background:type==='primary'?'white':'transparent', color:type==='primary'?'#144947':'white', cursor:'pointer', letterSpacing:'0.08em' }
+  return { fontFamily:'var(--font-display)', fontSize:15, padding:'10px 20px', borderRadius:2, border:type==='ghost'?`1.5px solid var(--border)`:'none', background:type==='primary'?'var(--accent)':'transparent', color:type==='primary'?'var(--bg)':'var(--text)', cursor:'pointer', letterSpacing:'0.08em' }
 }
 
-const navBtnStyle: React.CSSProperties = { width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:2, cursor:'pointer', fontSize:17, color:'white' }
+const navBtnStyle: React.CSSProperties = { width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:2, cursor:'pointer', fontSize:17, color:'var(--text)' }

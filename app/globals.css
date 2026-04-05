@@ -3,51 +3,68 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --celadon: #7BBFBC;
-  --celadon-light: #9DD4D1;
-  --celadon-dark: #5A9E9B;
-  --teal: #1E6B68;
-  --teal-dark: #144947;
-  --white: #FFFFFF;
-  --muted: rgba(255,255,255,0.5);
-  --border: rgba(0,0,0,0.12);
+  --bg: #F2EDE4;
+  --bg2: #EAE4DA;
+  --bg3: #E0D9CE;
+  --surface: #FDFAF6;
+  --topbar: #0E0D0B;
+  --sidebar: #1A1814;
+  --text: #0E0D0B;
+  --text2: #3A3530;
+  --text3: #8A8078;
+  --accent: #1E6B68;
+  --accent-light: #9DD4D1;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.06);
   --font-display: 'Bebas Neue', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-body: 'Bebas Neue', sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #0A2A29;
+  --bg2: #0F3635;
+  --bg3: #144947;
+  --surface: #0A2A29;
+  --topbar: #060F0F;
+  --sidebar: #060F0F;
+  --text: #F2EDE4;
+  --text2: #9DD4D1;
+  --text3: rgba(255,255,255,0.35);
+  --accent: #9DD4D1;
+  --accent-light: #1E6B68;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.04);
 }
 
 body {
-  background: var(--celadon);
+  background: var(--bg);
   font-family: var(--font-body);
-  color: var(--white);
+  color: var(--text);
   min-height: 100vh;
-  font-size: 13px;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.05em;
 }
 
-/* Scrollbars */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* Inputs */
-input[type="text"],
-input[type="date"],
-input[type="number"],
-select {
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
   font-family: var(--font-body);
-  font-size: 13px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
   border-radius: 2px;
   padding: 8px 10px;
   width: 100%;
   outline: none;
   transition: border-color 0.15s;
 }
-input:focus, select:focus { border-color: var(--celadon-light); }
-input::placeholder { color: rgba(255,255,255,0.3); }
-select option { background: var(--teal-dark); color: white; }
-
-/* Date input calendar icon color */
-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
+input:focus, select:focus { border-color: var(--accent); }
+input::placeholder { color: var(--text3); }
+select option { background: var(--bg); color: var(--text); }
+input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; }
+input[type="range"] { accent-color: var(--accent); cursor: pointer; width: 100%; }
