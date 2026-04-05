@@ -155,6 +155,7 @@ export default function Home() {
         }
         setTasks(prev => prev.filter(t => !selectedTaskIds.has(t.id)))
         setSelectedTaskIds(new Set())
+        await load()
       }
     }
     window.addEventListener('keydown', handler)
@@ -483,14 +484,16 @@ export default function Home() {
     await deleteTask(editingTask.id)
     setTasks(prev => prev.filter(t => t.id !== editingTask.id))
     setShowTaskModal(false)
+    await load()
   }
 
   async function deleteSelected() {
-    for (const id of selectedTaskIds) {
+    for (const id of Array.from(selectedTaskIds)) {
       await deleteTask(id)
     }
     setTasks(prev => prev.filter(t => !selectedTaskIds.has(t.id)))
     setSelectedTaskIds(new Set())
+    await load()
   }
 
   const selectedProject = projects.find(p => p.id === selectedId)
