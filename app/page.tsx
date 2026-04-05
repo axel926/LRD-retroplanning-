@@ -799,27 +799,27 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
   const todayPct = new Date().getFullYear()===year ? pct(toIso(new Date())) : -1
   const MS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
   return (
-    <div style={{ flex:1, overflowY:'auto', padding:28, background:'#0F3635' }}>
+    <div style={{ flex:1, overflowY:'auto', padding:32, background:'#0A2A29' }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
         <button onClick={()=>onYearChange(year-1)} style={navBtnStyle}>‹</button>
         <div style={{ fontFamily:'var(--font-display)', fontSize:42, letterSpacing:'0.06em', color:'white' }}>VUE <span style={{color:'#144947'}}>{year}</span></div>
         <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
       </div>
       <div style={{ display:'flex', paddingLeft:212, marginBottom:10 }}>
-        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:13, letterSpacing:'0.1em', color:'rgba(255,255,255,0.6)', textAlign:'center' }}>{m}</div>)}
+        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.1em', color:'rgba(255,255,255,0.8)', textAlign:'center', fontFamily:'var(--font-display)' }}>{m}</div>)}
       </div>
       {projects.map(proj => {
         const pt = tasks.filter(t=>t.project_id===proj.id)
         return (
-          <div key={proj.id} style={{ marginBottom:62 }}>
+          <div key={proj.id} style={{ marginBottom:82 }}>
             <div onClick={()=>onSelectProject(proj.id)} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8, cursor:'pointer' }}>
               <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
-              <span style={{ fontFamily:'var(--font-display)', fontSize:18, letterSpacing:'0.1em', color:'white' }}>{proj.name}</span>
+              <span style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em', color:'white', fontWeight:600 }}>{proj.name}</span>
               <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)' }}>{proj.client}</span>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:5 }}>
               <div style={{ width:170, flexShrink:0 }}/>
-              <div style={{ flex:1, height:28, borderRadius:3, background:'rgba(0,0,0,0.15)', position:'relative' }}>
+              <div style={{ flex:1, height:36, borderRadius:3, background:'rgba(255,255,255,0.06)', position:'relative', border:'1px solid rgba(255,255,255,0.08)' }}>
                 {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.6)',zIndex:3 }}/>}
                 {pt.map(t=>{const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l);return <div key={t.id} style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.6,borderRadius:2 }}/>})}
               </div>
@@ -827,11 +827,11 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
             {pt.map(t=>{
               const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l)
               return (
-                <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
-                  <div style={{ width:210, flexShrink:0, fontSize:13, color:'rgba(255,255,255,0.6)', paddingLeft:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
-                  <div style={{ flex:1, height:18, borderRadius:2, background:'rgba(0,0,0,0.1)', position:'relative' }}>
+                <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                  <div style={{ width:210, flexShrink:0, fontSize:13, color:'rgba(255,255,255,0.85)', paddingLeft:16, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
+                  <div style={{ flex:1, height:28, borderRadius:2, background:'rgba(255,255,255,0.05)', position:'relative', border:'1px solid rgba(255,255,255,0.06)' }}>
                     {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'rgba(255,255,255,0.5)',zIndex:3 }}/>}
-                    <div style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.85,borderRadius:2 }}/>
+                    <div style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:1,borderRadius:2,display:'flex',alignItems:'center',padding:'0 6px',overflow:'hidden' }}/>
                   </div>
                 </div>
               )
