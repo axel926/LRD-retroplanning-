@@ -118,6 +118,7 @@ export default function Home() {
   // Lane drag reorder
   const laneDragRef = useRef<{laneId:string, startY:number, currentOrder:number} | null>(null)
   const [draggingLaneId, setDraggingLaneId] = useState<string|null>(null)
+  const [hoveredLaneId, setHoveredLaneId] = useState<string|null>(null)
 
   // Block drag
   const blockDragRef = useRef<{
@@ -276,6 +277,10 @@ export default function Home() {
   function onBlockDragMove(e: MouseEvent) {
     const d = blockDragRef.current
     if (!d) return
+    // Track which lane is hovered
+    const el = document.elementFromPoint(e.clientX, e.clientY)
+    const laneEl = el?.closest('[data-lane-id]') as HTMLElement | null
+    setHoveredLaneId(laneEl?.dataset.laneId || null)
     const dx = e.clientX - d.startX
     const rawDays = Math.round((dx / d.areaWidth) * d.totalDays)
     const snapThreshold = Math.max(1, Math.round(10 / (d.areaWidth / d.totalDays)))
@@ -301,21 +306,19 @@ export default function Home() {
 
   async function onBlockDragEnd(e?: MouseEvent) {
     const d = blockDragRef.current
+    const targetLaneId = hoveredLaneId
     blockDragRef.current = null
+    setHoveredLaneId(null)
     window.removeEventListener('mousemove', onBlockDragMove)
     window.removeEventListener('mouseup', onBlockDragEnd)
     if (!d) return
-    // Check if dropped on a different lane
-    const el = e ? document.elementFromPoint(e.clientX, e.clientY) : null
-    const laneEl = el?.closest('[data-lane-id]') as HTMLElement | null
-    const newLaneId = laneEl?.dataset.laneId
     for (const id of d.taskIds) {
       const task = tasks.find(t => t.id === id)
       if (task) {
         const updates: Record<string,unknown> = { start_date: task.start_date, end_date: task.end_date }
-        if (newLaneId && newLaneId !== task.lane_id) {
-          updates.lane_id = newLaneId
-          setTasks(prev => prev.map(t => t.id === id ? { ...t, lane_id: newLaneId } : t))
+        if (targetLaneId && targetLaneId !== task.lane_id) {
+          updates.lane_id = targetLaneId
+          setTasks(prev => prev.map(t => t.id === id ? { ...t, lane_id: targetLaneId } : t))
         }
         await updateTask(task.id, updates)
       }
@@ -564,6 +567,7 @@ export default function Home() {
                   <div style={{ fontFamily:'var(--font-display)', fontSize:10, minWidth:140, textAlign:'center', color:'white' }}>{anchorLabel}</div>
                   <button onClick={()=>shiftAnchor(1)} style={navBtnStyle}>›</button>
                   <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }}>AUJ.</button>
+                  <button onClick={()=>setGanttZoom(1)} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Réinitialiser zoom">1:1</button>
                 </div>
                 {selectedProject && (
                   <>
@@ -577,8 +581,8 @@ export default function Home() {
 
               <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
                 {/* GANTT */}
-                <div ref={ganttRef} style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }} onMouseDown={e => { onGanttMouseDown(e); if (!(e.target as HTMLElement).closest('.library-panel')) setShowLibrary(false) }}>
-                  <div style={{ minWidth:zoom==='day'?columns.length*44+160:860, display:'flex', flexDirection:'column', position:'relative' }}>
+                <div ref={ganttRef} style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }} onMouseDown={e => { onGanttMouseDown(e); if (!(e.target as HTMLElement).closest('.library-panel')) setShowLibrary(false) }} onWheel={e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); setGanttZoom(z => Math.min(3, Math.max(0.3, z - e.deltaY * 0.002))) } }}>
+                  <div style={{ minWidth:zoom==='day'?columns.length*44*ganttZoom+160:Math.max(860, 860*ganttZoom), display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
                       <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'#092928', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
@@ -652,7 +656,7 @@ export default function Home() {
                             </div>
 
                             {/* BARS AREA */}
-                            <div className="bars-area" data-lane-id={lane.id} style={{ flex:1, position:'relative', minHeight:52 }}>
+                            <div className="bars-area" data-lane-id={lane.id} style={{ flex:1, position:'relative', minHeight:52, background: hoveredLaneId===lane.id ? 'rgba(255,255,255,0.06)' : 'transparent', transition:'background 0.1s' }}>
                               {columns.map((col,i) => (
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
