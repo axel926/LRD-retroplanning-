@@ -530,8 +530,8 @@ export default function Home() {
           {view === 'gantt' ? (
             <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
               {/* TOOLBAR */}
-              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 20px', background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
-                <div style={{ fontFamily:'var(--font-display)', fontSize:28, letterSpacing:'0.08em', color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
+                <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
                   {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
                 </div>
                 <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid rgba(255,255,255,0.2)', flexShrink:0 }}>
@@ -560,11 +560,11 @@ export default function Home() {
               <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
                 {/* GANTT */}
                 <div ref={ganttRef} style={{ flex:1, overflowY:'auto', overflowX:'auto', position:'relative' }} onMouseDown={onGanttMouseDown}>
-                  <div style={{ minWidth:zoom==='day'?columns.length*44+200:860, display:'flex', flexDirection:'column', position:'relative' }}>
+                  <div style={{ minWidth:zoom==='day'?columns.length*44+160:860, display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
                       <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'#4A8E8B', borderBottom:'1px solid rgba(0,0,0,0.1)' }}>
-                        <div style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
+                        <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
                         <div style={{ flex:1, display:'flex' }}>
                           {weekGroups.map((wg,i) => (
                             <div key={i} style={{ width:`${(wg.count/columns.length)*100}%`, height:20, display:'flex', alignItems:'center', paddingLeft:8, fontFamily:'var(--font-display)', fontSize:9, letterSpacing:'0.12em', color:'rgba(255,255,255,0.5)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', whiteSpace:'nowrap', overflow:'hidden' }}>{wg.label}</div>
@@ -574,12 +574,12 @@ export default function Home() {
                     )}
                     {/* COL HEADER */}
                     <div style={{ display:'flex', position:'sticky', top:zoom==='day'?22:0, zIndex:10, background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
-                      <div style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
-                        <div style={{ height:42, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>LIGNE / BLOC</div>
+                      <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
+                        <div style={{ height:48, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>LIGNE / BLOC</div>
                       </div>
                       <div style={{ flex:1, display:'flex' }}>
                         {columns.map((col,i) => (
-                          <div key={col.key} style={{ flex:1, height:36, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?14:12, color:col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background:col.isToday?'rgba(255,255,255,0.18)':'transparent', whiteSpace:'nowrap' }}>
+                          <div key={col.key} style={{ flex:1, height:48, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-display)', fontSize:zoom==='day'?15:13, color:col.isToday?'white':'rgba(255,255,255,0.65)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', background:col.isToday?'rgba(255,255,255,0.18)':'transparent', whiteSpace:'nowrap' }}>
                             <span style={{ fontWeight:col.isToday?700:400 }}>{col.label}</span>
                             {zoom!=='day'&&col.sublabel&&<span style={{ fontSize:9, opacity:0.5, marginTop:1 }}>{col.sublabel}</span>}
                           </div>
@@ -603,9 +603,9 @@ export default function Home() {
                         const laneTasks = projTasks.filter(t => t.lane_id === lane.id)
                         const isLaneDragging = draggingLaneId === lane.id
                         return (
-                          <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.1)', minHeight:58, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
+                          <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.1)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
                             {/* LANE LABEL */}
-                            <div style={{ width:200, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)', background:'rgba(255,255,255,0.06)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                            <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)', background:'rgba(255,255,255,0.06)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
                               {/* DRAG HANDLE */}
                               <div
                                 className="lane-handle"
@@ -859,7 +859,7 @@ function FormRow({ label, children }:{ label:string, children:React.ReactNode })
 }
 
 function btnStyle(type:'primary'|'ghost'): React.CSSProperties {
-  return { fontFamily:'var(--font-display)', fontSize:14, padding:'8px 18px', borderRadius:2, border:type==='ghost'?'1.5px solid rgba(255,255,255,0.25)':'none', background:type==='primary'?'white':'transparent', color:type==='primary'?'#144947':'white', cursor:'pointer', letterSpacing:'0.08em' }
+  return { fontFamily:'var(--font-display)', fontSize:15, padding:'10px 20px', borderRadius:2, border:type==='ghost'?'1.5px solid rgba(255,255,255,0.25)':'none', background:type==='primary'?'white':'transparent', color:type==='primary'?'#144947':'white', cursor:'pointer', letterSpacing:'0.08em' }
 }
 
 const navBtnStyle: React.CSSProperties = { width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:2, cursor:'pointer', fontSize:17, color:'white' }
