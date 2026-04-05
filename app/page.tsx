@@ -121,6 +121,8 @@ export default function Home() {
   const [hoveredLaneId, setHoveredLaneId] = useState<string|null>(null)
 
   // Block drag
+  const hoveredLaneRef = useRef<string|null>(null)
+  const [dropLaneHighlight, setDropLaneHighlight] = useState<string|null>(null)
   const blockDragRef = useRef<{
     taskIds: string[], type: 'move'|'resize',
     startX: number, areaWidth: number, totalDays: number,
@@ -277,10 +279,12 @@ export default function Home() {
   function onBlockDragMove(e: MouseEvent) {
     const d = blockDragRef.current
     if (!d) return
-    // Track which lane is hovered
+    // Track which lane is hovered via ref
     const el = document.elementFromPoint(e.clientX, e.clientY)
     const laneEl = el?.closest('[data-lane-id]') as HTMLElement | null
-    setHoveredLaneId(laneEl?.dataset.laneId || null)
+    const lid = laneEl?.dataset.laneId || null
+    hoveredLaneRef.current = lid
+    setDropLaneHighlight(lid)
     const dx = e.clientX - d.startX
     const rawDays = Math.round((dx / d.areaWidth) * d.totalDays)
     const snapThreshold = Math.max(1, Math.round(10 / (d.areaWidth / d.totalDays)))
@@ -306,9 +310,10 @@ export default function Home() {
 
   async function onBlockDragEnd(e?: MouseEvent) {
     const d = blockDragRef.current
-    const targetLaneId = hoveredLaneId
+    const targetLaneId = hoveredLaneRef.current
     blockDragRef.current = null
-    setHoveredLaneId(null)
+    hoveredLaneRef.current = null
+    setDropLaneHighlight(null)
     window.removeEventListener('mousemove', onBlockDragMove)
     window.removeEventListener('mouseup', onBlockDragEnd)
     if (!d) return
@@ -658,7 +663,7 @@ export default function Home() {
                             </div>
 
                             {/* BARS AREA */}
-                            <div className="bars-area" data-lane-id={lane.id} style={{ flex:1, position:'relative', minHeight:52, background: hoveredLaneId===lane.id ? 'rgba(255,255,255,0.06)' : 'transparent', transition:'background 0.1s' }}>
+                            <div className="bars-area" data-lane-id={lane.id} style={{ flex:1, position:'relative', minHeight:52, background: dropLaneHighlight===lane.id ? 'rgba(255,255,255,0.12)' : 'transparent', outline: dropLaneHighlight===lane.id ? '2px solid rgba(255,255,255,0.3)' : 'none', transition:'background 0.1s' }}>
                               {columns.map((col,i) => (
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
