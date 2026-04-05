@@ -526,11 +526,11 @@ export default function Home() {
         </div>
 
         {/* MAIN */}
-        <div style={{ flex:1, display:'flex', overflow:'hidden', background:'#7BBFBC' }}>
+        <div style={{ flex:1, display:'flex', overflow:'hidden', background:'#0F3635' }}>
           {view === 'gantt' ? (
             <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
               {/* TOOLBAR */}
-              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'#0A2A29', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
                 <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
                   {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
                 </div>
@@ -563,7 +563,7 @@ export default function Home() {
                   <div style={{ minWidth:zoom==='day'?columns.length*44+160:860, display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
-                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'#4A8E8B', borderBottom:'1px solid rgba(0,0,0,0.1)' }}>
+                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'#092928', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
                         <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
                         <div style={{ flex:1, display:'flex' }}>
                           {weekGroups.map((wg,i) => (
@@ -573,7 +573,7 @@ export default function Home() {
                       </div>
                     )}
                     {/* COL HEADER */}
-                    <div style={{ display:'flex', position:'sticky', top:zoom==='day'?22:0, zIndex:10, background:'#5A9E9B', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
+                    <div style={{ display:'flex', position:'sticky', top:zoom==='day'?22:0, zIndex:10, background:'#0A2A29', borderBottom:'1px solid rgba(0,0,0,0.12)' }}>
                       <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.12)' }}>
                         <div style={{ height:48, display:'flex', alignItems:'center', padding:'0 14px', fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'rgba(255,255,255,0.5)' }}>LIGNE / BLOC</div>
                       </div>
@@ -605,7 +605,7 @@ export default function Home() {
                         return (
                           <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.1)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
                             {/* LANE LABEL */}
-                            <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)', background:'rgba(255,255,255,0.06)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                            <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)', background:'#0A2A29', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
                               {/* DRAG HANDLE */}
                               <div
                                 className="lane-handle"
@@ -636,7 +636,7 @@ export default function Home() {
                             {/* BARS AREA */}
                             <div className="bars-area" style={{ flex:1, position:'relative', minHeight:52 }}>
                               {columns.map((col,i) => (
-                                <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.06)':'transparent',borderLeft:i>0?'1px solid rgba(0,0,0,0.06)':'none',pointerEvents:'none' }}/>
+                                <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
                               {todayPct>=0&&todayPct<=100&&(
                                 <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'rgba(255,255,255,0.7)',zIndex:4,pointerEvents:'none' }}/>
@@ -793,7 +793,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
   const todayPct = new Date().getFullYear()===year ? pct(toIso(new Date())) : -1
   const MS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
   return (
-    <div style={{ flex:1, overflowY:'auto', padding:28 }}>
+    <div style={{ flex:1, overflowY:'auto', padding:28, background:'#0F3635' }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
         <button onClick={()=>onYearChange(year-1)} style={navBtnStyle}>‹</button>
         <div style={{ fontFamily:'var(--font-display)', fontSize:42, letterSpacing:'0.06em', color:'white' }}>VUE <span style={{color:'#144947'}}>{year}</span></div>
