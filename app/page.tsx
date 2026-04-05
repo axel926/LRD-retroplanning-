@@ -555,7 +555,24 @@ export default function Home() {
                     <span style={{ fontWeight:500, fontSize:13, color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
                     <span onClick={e=>{e.stopPropagation();handleDeleteProject(p.id)}} style={{ color:'rgba(255,255,255,0.2)', fontSize:11, cursor:'pointer' }}>✕</span>
                   </div>
-                  <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginTop:2, paddingLeft:14 }}>{p.client} · {avg}%</div>
+                  <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', marginTop:2, paddingLeft:14 }}>{p.client}</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:5, marginTop:3, paddingLeft:14 }}>
+                    {(() => {
+                      const start = parseDate(p.start_date).getTime()
+                      const end = parseDate(p.end_date).getTime()
+                      const now = Date.now()
+                      const elapsed = Math.round(Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100)))
+                      const daysLeft = Math.max(0, Math.round((end - now) / 86400000))
+                      const isLate = now > end
+                      return <>
+                        <span style={{ fontSize:11, color: isLate ? '#ff8080' : '#9DD4D1', fontFamily:'var(--font-display)', letterSpacing:'0.06em' }}>{elapsed}%</span>
+                        <span style={{ fontSize:9, color:'rgba(255,255,255,0.2)' }}>·</span>
+                        <span style={{ fontSize:10, color: isLate ? '#ff8080' : 'rgba(255,255,255,0.35)' }}>{isLate ? 'dépassé' : `J-${daysLeft}`}</span>
+                        <span style={{ fontSize:9, color:'rgba(255,255,255,0.2)' }}>·</span>
+                        <span style={{ fontSize:10, color:'rgba(255,255,255,0.3)' }}>{fmtShort(p.end_date)}</span>
+                      </>
+                    })()}
+                  </div>
                   <div style={{ height:2, background:'rgba(255,255,255,0.08)', borderRadius:1, marginTop:5 }}>
                     <div style={{ height:'100%', width:`${avg}%`, background:p.color, borderRadius:1 }}/>
                   </div>
