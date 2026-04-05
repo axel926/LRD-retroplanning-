@@ -99,7 +99,7 @@ export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [view, setView] = useState<View>('gantt')
-  const [zoom, setZoom] = useState<ZoomLevel>('month')
+  const [zoom, setZoom] = useState<ZoomLevel>('day')
   const [anchor, setAnchor] = useState(new Date())
   const [overviewYear, setOverviewYear] = useState(new Date().getFullYear())
   const [loading, setLoading] = useState(true)
