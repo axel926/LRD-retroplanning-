@@ -709,6 +709,14 @@ export default function Home() {
                     )}
                   </div>
 
+                    {selectedProject && (
+                      <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.04)', minHeight:44 }}>
+                        <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(255,255,255,0.06)', background:'#0A2A29', display:'flex', alignItems:'center', padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(255,255,255,0.2)', borderRadius:2, color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
+                        </div>
+                        <div style={{ flex:1 }}/>
+                      </div>
+                    )}
                   {/* LASSO */}
                   {lasso && lasso.w > 5 && lasso.h > 5 && (
                     <div style={{ position:'absolute', left:lasso.x, top:lasso.y, width:lasso.w, height:lasso.h, border:'1.5px solid rgba(255,255,255,0.8)', background:'rgba(255,255,255,0.08)', pointerEvents:'none', zIndex:20, borderRadius:2 }}/>
