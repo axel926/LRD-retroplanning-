@@ -657,13 +657,13 @@ export default function Home() {
                                     className="gantt-bar"
                                     data-task-id={task.id}
                                     onMouseDown={e => { if (!(e.target as HTMLElement).classList.contains('resize-h')) onMouseDownBar(e, task.id, false) }}
-                                    onDoubleClick={() => openEditTask(task)}
                                     onClick={e => {
                                       e.stopPropagation()
                                       if (e.shiftKey) {
                                         setSelectedTaskIds(prev => { const n = new Set(prev); n.has(task.id)?n.delete(task.id):n.add(task.id); return n })
                                       } else {
                                         setSelectedTaskIds(new Set([task.id]))
+                                        openEditTask(task)
                                       }
                                     }}
                                     style={{ position:'absolute', height:34, top:'50%', transform:'translateY(-50%)', left:`${l}%`, width:`${w}%`, minWidth:6, background:task.color, borderRadius:2, cursor:'grab', display:'flex', alignItems:'center', padding:'0 8px', fontSize:12, fontWeight:500, color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', userSelect:'none', zIndex:isSelected?3:2, textShadow:'0 1px 2px rgba(0,0,0,0.3)', outline:isSelected?'2px solid white':'none', boxShadow:isSelected?'0 0 0 2px rgba(255,255,255,0.4)':'none' }}
