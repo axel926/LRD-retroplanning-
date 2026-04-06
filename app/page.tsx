@@ -997,8 +997,8 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
           const pt = tasks.filter(t=>t.project_id===proj.id)
           return (
             <div key={proj.id}>
-              <div onClick={()=>onSelectProject(proj.id)} style={{ display:'flex', alignItems:'stretch', borderBottom:'1px solid var(--border)', background:'var(--bg2)', cursor:'pointer' }}>
-                <div onClick={(e)=>{e.stopPropagation();onSelectProject(proj.id)}} style={{ width:LABEL_W, flexShrink:0, padding:'10px 16px', cursor:'pointer', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8, userSelect:'none' }}>
+              <div style={{ display:'flex', alignItems:'stretch', borderBottom:'1px solid var(--border)', background:'var(--bg2)' }}>
+                <div onClick={()=>onSelectProject(proj.id)} style={{ width:LABEL_W, flexShrink:0, padding:'10px 16px', cursor:'pointer', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8, userSelect:'none' }}>
                   <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
                   <div>
                     <div style={{ fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.08em', color:'var(--text)' }}>{proj.name}</div>
