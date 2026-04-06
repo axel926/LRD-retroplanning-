@@ -898,7 +898,7 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <OverviewPanel projects={projects} tasks={tasks} year={overviewYear} onYearChange={setOverviewYear} onSelectProject={id=>{selectProject(id);setView('gantt')}} />
+            <OverviewPanel projects={projects} tasks={tasks} year={overviewYear} onYearChange={setOverviewYear} onSelectProject={async (id)=>{await selectProject(id);setView('gantt')}} />
           )}
         </div>
       </div>
@@ -1008,7 +1008,7 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
                 <div style={{ flex:1, position:'relative', minHeight:40 }}>
                   {MS.map((_,i) => i>0 && <div key={i} style={{ position:'absolute',top:0,bottom:0,left:`${(i/12)*100}%`,width:1,background:'var(--border)',pointerEvents:'none' }}/>)}
                   {todayPct>=0 && <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'var(--accent)',opacity:0.5,zIndex:3,pointerEvents:'none' }}/>}
-                  {(() => { const l=pct(proj.start_date),w=pctW(proj.start_date,proj.end_date); return <div style={{ position:'absolute',top:'50%',transform:'translateY(-50%)',left:`${l}%`,width:`${w}%`,height:8,background:proj.color,opacity:0.25,borderRadius:2 }}/> })()}
+                  {pt.length > 0 && (() => { const l=pct(proj.start_date),w=pctW(proj.start_date,proj.end_date); return <div style={{ position:'absolute',top:'50%',transform:'translateY(-50%)',left:`${l}%`,width:`${w}%`,height:8,background:proj.color,opacity:0.2,borderRadius:2 }}/> })()}
                 </div>
               </div>
               {pt.map(task => {
