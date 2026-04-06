@@ -675,11 +675,11 @@ export default function Home() {
                   <div style={{ minWidth:zoom==='day'?columns.length*44*ganttZoom+160:Math.max(860, 860*ganttZoom), display:'flex', flexDirection:'column', position:'relative' }}>
                     {/* WEEK GROUP */}
                     {zoom==='day' && (
-                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'rgba(0,0,0,0.1)', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ display:'flex', position:'sticky', top:0, zIndex:11, background:'var(--bg3)', borderBottom:'1px solid var(--border)' }}>
                         <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.1)' }}/>
                         <div style={{ flex:1, display:'flex' }}>
                           {weekGroups.map((wg,i) => (
-                            <div key={i} style={{ width:`${(wg.count/columns.length)*100}%`, height:20, display:'flex', alignItems:'center', paddingLeft:8, fontFamily:'var(--font-display)', fontSize:9, letterSpacing:'0.12em', color:'rgba(0,0,0,0.5)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', whiteSpace:'nowrap', overflow:'hidden' }}>{wg.label}</div>
+                            <div key={i} style={{ width:`${(wg.count/columns.length)*100}%`, height:20, display:'flex', alignItems:'center', paddingLeft:8, fontFamily:'var(--font-display)', fontSize:9, letterSpacing:'0.12em', color:'var(--text2)', borderLeft:i>0?'1px solid rgba(0,0,0,0.1)':'none', whiteSpace:'nowrap', overflow:'hidden' }}>{wg.label}</div>
                           ))}
                         </div>
                       </div>
@@ -701,11 +701,11 @@ export default function Home() {
 
                     {/* LANES */}
                     {!selectedProject ? (
-                      <div style={{ padding:'50px 0', textAlign:'center', color:'rgba(0,0,0,0.35)' }}>
+                      <div style={{ padding:'50px 0', textAlign:'center', color:'var(--text3)' }}>
                         <div style={{ fontFamily:'var(--font-display)', fontSize:18 }}>SÉLECTIONNER UN PROJET</div>
                       </div>
                     ) : sortedLanes.length === 0 ? (
-                      <div style={{ padding:'50px 0', textAlign:'center', color:'rgba(0,0,0,0.35)' }}>
+                      <div style={{ padding:'50px 0', textAlign:'center', color:'var(--text3)' }}>
                         <div style={{ fontFamily:'var(--font-display)', fontSize:18, marginBottom:8 }}>AUCUNE LIGNE</div>
                         <div style={{ fontSize:12, marginBottom:16 }}>Crée une ligne puis ajoute des blocs</div>
                         <button onClick={addLane} style={btnStyle('primary')}>+ CRÉER UNE LIGNE</button>
@@ -715,14 +715,14 @@ export default function Home() {
                         const laneTasks = projTasks.filter(t => t.lane_id === lane.id)
                         const isLaneDragging = draggingLaneId === lane.id
                         return (
-                          <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid rgba(0,0,0,0.08)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
+                          <div key={lane.id} style={{ display:'flex', borderBottom:'1px solid var(--border)', minHeight:62, opacity:isLaneDragging?0.5:1, transition:'opacity 0.1s' }}>
                             {/* LANE LABEL */}
-                            <div style={{ width:160, flexShrink:0, background:'rgba(0,0,0,0.04)', borderRight:'1px solid rgba(0,0,0,0.08)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
+                            <div style={{ width:160, flexShrink:0, background:'var(--bg2)', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:6, padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
                               {/* DRAG HANDLE */}
                               <div
                                 className="lane-handle"
                                 onMouseDown={e => onLaneDragStart(e, lane.id, lane.sort_order)}
-                                style={{ cursor:'grab', color:'rgba(0,0,0,0.3)', fontSize:14, flexShrink:0, userSelect:'none', padding:'4px 2px' }}
+                                style={{ cursor:'grab', color:'var(--text3)', fontSize:14, flexShrink:0, userSelect:'none', padding:'4px 2px' }}
                                 title="Glisser pour réordonner"
                               >≡</div>
                               {/* EDITABLE NAME */}
@@ -735,13 +735,13 @@ export default function Home() {
                               {/* ADD BLOCK TO THIS LANE */}
                               <button
                                 onClick={e=>{ e.stopPropagation(); setLibraryTargetLane(lane.id); setShowLibrary(true) }}
-                                style={{ background:'none', border:'none', color:'rgba(0,0,0,0.35)', cursor:'pointer', fontSize:16, lineHeight:1, flexShrink:0, padding:'2px 4px' }}
+                                style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:16, lineHeight:1, flexShrink:0, padding:'2px 4px' }}
                                 title="Ajouter un bloc"
                               >+</button>
                               {/* DELETE LANE */}
                               <button
                                 onClick={e=>{ e.stopPropagation(); removeLane(lane.id) }}
-                                style={{ background:'none', border:'none', color:'rgba(0,0,0,0.3)', cursor:'pointer', fontSize:12, lineHeight:1, flexShrink:0 }}
+                                style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:12, lineHeight:1, flexShrink:0 }}
                               >✕</button>
                             </div>
 
@@ -751,7 +751,7 @@ export default function Home() {
                                 <div key={col.key} style={{ position:'absolute',top:0,bottom:0,left:`${(i/columns.length)*100}%`,width:`${100/columns.length}%`,background:col.isToday?'rgba(255,255,255,0.05)':'transparent',borderLeft:i>0?'1px solid rgba(255,255,255,0.05)':'none',pointerEvents:'none' }}/>
                               ))}
                               {todayPct>=0&&todayPct<=100&&(
-                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1,background:'rgba(0,0,0,0.15)',zIndex:4,pointerEvents:'none' }}/>
+                                <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'var(--accent)',zIndex:4,pointerEvents:'none' }}/>
                               )}
                               {laneTasks.map(task => {
                                 const l = Math.max(0, pctFromDate(task.start_date))
@@ -795,7 +795,7 @@ export default function Home() {
                     {selectedProject && sortedLanes.length > 0 && (
                       <div style={{ display:'flex', minHeight:40 }}>
                         <div style={{ width:160, flexShrink:0, background:'transparent', display:'flex', alignItems:'center', padding:'6px 10px', position:'sticky', left:0, zIndex:5 }}>
-                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(0,0,0,0.2)', borderRadius:2, color:'rgba(0,0,0,0.4)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'4px 10px', width:'100%' }}>+ LIGNE</button>
+                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(0,0,0,0.2)', borderRadius:2, color:'var(--text3)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'4px 10px', width:'100%' }}>+ LIGNE</button>
                         </div>
                         <div style={{ flex:1 }}/>
                       </div>
@@ -810,7 +810,7 @@ export default function Home() {
                 {showLibrary && (
                   <div style={{ width:250, flexShrink:0, background:'var(--surface)', borderLeft:'1px solid var(--border)', overflowY:'auto', display:'flex', flexDirection:'column' }}>
                     <div style={{ padding:'12px 14px 8px', borderBottom:'1px solid var(--border)', position:'sticky', top:0, background:'var(--surface)', zIndex:5 }}>
-                      <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'#0E0D0B' }}>
+                      <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'var(--text)' }}>
                         {libraryTargetLane ? `→ ${lanes.find(l=>l.id===libraryTargetLane)?.name||'LIGNE'}` : 'AJOUTER UN BLOC'}
                       </div>
                       <div style={{ fontSize:10, color:'var(--text3)', marginTop:3 }}>Clic = ajouté à aujourd'hui</div>
@@ -824,7 +824,7 @@ export default function Home() {
                           </div>
                           {cat.blocks.map(block => (
                             <button key={block} onClick={() => addBlockFromLibrary(block, cat.color, cat.category)}
-                              style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', background:'var(--bg2)', border:'1px solid transparent', borderRadius:3, cursor:'pointer', textAlign:'left', color:'#0E0D0B', fontSize:11, fontFamily:'var(--font-body)', width:'100%', marginBottom:2 }}
+                              style={{ display:'flex', alignItems:'center', gap:7, padding:'7px 10px', background:'var(--bg2)', border:'1px solid transparent', borderRadius:3, cursor:'pointer', textAlign:'left', color:'var(--text)', fontSize:11, fontFamily:'var(--font-body)', width:'100%', marginBottom:2 }}
                               onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor=cat.color }}
                               onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor='transparent' }}
                             >
