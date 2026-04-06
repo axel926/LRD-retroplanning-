@@ -792,10 +792,10 @@ export default function Home() {
                     )}
                   </div>
 
-                    {selectedProject && (
-                      <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.04)', minHeight:44 }}>
-                        <div style={{ width:160, flexShrink:0, borderRight:'1px solid rgba(255,255,255,0.06)', background:'var(--bg2)', display:'flex', alignItems:'center', padding:'0 10px', position:'sticky', left:0, zIndex:5 }}>
-                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(0,0,0,0.2)', borderRadius:2, color:'rgba(0,0,0,0.4)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'5px 10px', width:'100%' }}>+ LIGNE</button>
+                    {selectedProject && sortedLanes.length > 0 && (
+                      <div style={{ display:'flex', minHeight:40 }}>
+                        <div style={{ width:160, flexShrink:0, background:'transparent', display:'flex', alignItems:'center', padding:'6px 10px', position:'sticky', left:0, zIndex:5 }}>
+                          <button onMouseDown={e=>{e.stopPropagation();addLane()}} style={{ background:'none', border:'1px dashed rgba(0,0,0,0.2)', borderRadius:2, color:'rgba(0,0,0,0.4)', cursor:'pointer', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.1em', padding:'4px 10px', width:'100%' }}>+ LIGNE</button>
                         </div>
                         <div style={{ flex:1 }}/>
                       </div>
