@@ -973,49 +973,70 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
   const yS = new Date(year,0,1), yE = new Date(year,11,31)
   const total = (yE.getTime()-yS.getTime())/86400000+1
   const pct = (d:string) => Math.max(0,Math.min(100,((new Date(d+'T00:00:00').getTime()-yS.getTime())/86400000/total)*100))
+  const pctW = (s:string,e:string) => Math.max(0.5, pct(e)-pct(s))
   const todayPct = new Date().getFullYear()===year ? pct(toIso(new Date())) : -1
   const MS = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC']
+  const LABEL_W = 180
+
   return (
-    <div style={{ flex:1, overflowY:'auto', padding:32, background:'var(--bg)' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
-        <button onClick={()=>onYearChange(year-1)} style={navBtnStyle}>‹</button>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:42, letterSpacing:'0.06em', color:'var(--text)' }}>VUE <span style={{color:'var(--accent)'}}>{year}</span></div>
-        <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
+    <div style={{ flex:1, overflowY:'auto', overflowX:'auto', background:'var(--bg)' }}>
+      <div style={{ position:'sticky', top:0, zIndex:10, background:'var(--bg)', borderBottom:'1px solid var(--border)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, padding:'20px 24px 12px' }}>
+          <button onClick={()=>onYearChange(year-1)} style={navBtnStyle}>‹</button>
+          <div style={{ fontFamily:'var(--font-display)', fontSize:36, letterSpacing:'0.06em', color:'var(--text)' }}>VUE <span style={{color:'var(--accent)'}}>{year}</span></div>
+          <button onClick={()=>onYearChange(year+1)} style={navBtnStyle}>›</button>
+        </div>
+        <div style={{ display:'flex', paddingLeft:LABEL_W, borderTop:'1px solid var(--border)' }}>
+          {MS.map((m,i) => (
+            <div key={m} style={{ flex:1, padding:'8px 0', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.1em', color:'var(--text2)', textAlign:'center', borderLeft:i>0?'1px solid var(--border)':'none', background:i===new Date().getMonth()&&year===new Date().getFullYear()?'rgba(30,107,104,0.08)':'transparent' }}>{m}</div>
+          ))}
+        </div>
       </div>
-      <div style={{ display:'flex', paddingLeft:212, marginBottom:10 }}>
-        {MS.map(m=><div key={m} style={{ flex:1, fontFamily:'var(--font-display)', fontSize:13, letterSpacing:'0.1em', color:'var(--text2)', textAlign:'center' }}>{m}</div>)}
-      </div>
-      {projects.map(proj => {
-        const pt = tasks.filter(t=>t.project_id===proj.id)
-        return (
-          <div key={proj.id} style={{ marginBottom:82 }}>
-            <div onClick={()=>onSelectProject(proj.id)} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8, cursor:'pointer' }}>
-              <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
-              <span style={{ fontFamily:'var(--font-display)', fontSize:20, letterSpacing:'0.1em', color:'var(--text)' }}>{proj.name}</span>
-              <span style={{ fontSize:12, color:'var(--text3)' }}>{proj.client}</span>
-            </div>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:5 }}>
-              <div style={{ width:170, flexShrink:0 }}/>
-              <div style={{ flex:1, height:28, borderRadius:3, background:'var(--bg2)', position:'relative', border:'1px solid var(--border)' }}>
-                {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'var(--accent)',zIndex:3 }}/>}
-                {pt.map(t=>{const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l);return <div key={t.id} style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:0.6,borderRadius:2 }}/>})}
-              </div>
-            </div>
-            {pt.map(t=>{
-              const l=pct(t.start_date),w=Math.max(0.3,pct(t.end_date)-l)
-              return (
-                <div key={t.id} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                  <div style={{ width:210, flexShrink:0, fontSize:13, color:'var(--text2)', paddingLeft:16, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{t.name}</div>
-                  <div style={{ flex:1, height:20, borderRadius:2, background:'var(--bg2)', position:'relative', border:'1px solid var(--border)' }}>
-                    {todayPct>=0&&<div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'var(--accent)',zIndex:3 }}/>}
-                    <div style={{ position:'absolute',height:'100%',left:`${l}%`,width:`${w}%`,background:proj.color,opacity:1,borderRadius:2,display:'flex',alignItems:'center',padding:'0 6px',overflow:'hidden' }}/>
+      <div style={{ padding:'0 0 40px' }}>
+        {projects.map(proj => {
+          const pt = tasks.filter(t=>t.project_id===proj.id)
+          return (
+            <div key={proj.id}>
+              <div style={{ display:'flex', alignItems:'stretch', borderBottom:'1px solid var(--border)', background:'var(--bg2)' }}>
+                <div onClick={()=>onSelectProject(proj.id)} style={{ width:LABEL_W, flexShrink:0, padding:'10px 16px', cursor:'pointer', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
+                  <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
+                  <div>
+                    <div style={{ fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.08em', color:'var(--text)' }}>{proj.name}</div>
+                    <div style={{ fontSize:11, color:'var(--text3)', marginTop:1 }}>{proj.client}</div>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        )
-      })}
+                <div style={{ flex:1, position:'relative', minHeight:40 }}>
+                  {MS.map((_,i) => i>0 && <div key={i} style={{ position:'absolute',top:0,bottom:0,left:`${(i/12)*100}%`,width:1,background:'var(--border)',pointerEvents:'none' }}/>)}
+                  {todayPct>=0 && <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:2,background:'var(--accent)',opacity:0.5,zIndex:3,pointerEvents:'none' }}/>}
+                  {(() => { const l=pct(proj.start_date),w=pctW(proj.start_date,proj.end_date); return <div style={{ position:'absolute',top:'50%',transform:'translateY(-50%)',left:`${l}%`,width:`${w}%`,height:8,background:proj.color,opacity:0.25,borderRadius:2 }}/> })()}
+                </div>
+              </div>
+              {pt.map(task => {
+                const l=pct(task.start_date),w=pctW(task.start_date,task.end_date)
+                return (
+                  <div key={task.id} style={{ display:'flex', alignItems:'stretch', borderBottom:'1px solid var(--border2)', minHeight:36 }}>
+                    <div style={{ width:LABEL_W, flexShrink:0, padding:'6px 16px 6px 28px', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                        <div style={{ width:5,height:5,borderRadius:'50%',background:task.color,flexShrink:0 }}/>
+                        <span style={{ fontSize:11, color:'var(--text2)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{task.name}</span>
+                      </div>
+                    </div>
+                    <div style={{ flex:1, position:'relative' }}>
+                      {MS.map((_,i) => i>0 && <div key={i} style={{ position:'absolute',top:0,bottom:0,left:`${(i/12)*100}%`,width:1,background:'var(--border2)',pointerEvents:'none' }}/>)}
+                      {todayPct>=0 && <div style={{ position:'absolute',top:0,bottom:0,left:`${todayPct}%`,width:1.5,background:'var(--accent)',opacity:0.4,zIndex:3,pointerEvents:'none' }}/>}
+                      <div style={{ position:'absolute',top:'50%',transform:'translateY(-50%)',left:`${l}%`,width:`${w}%`,minWidth:4,height:22,background:task.color,borderRadius:2,display:'flex',alignItems:'center',padding:'0 6px',overflow:'hidden' }}>
+                        <span style={{ fontSize:10,color:'white',whiteSpace:'nowrap',textOverflow:'ellipsis',overflow:'hidden',textShadow:'0 1px 2px rgba(0,0,0,0.3)' }}>{task.name}</span>
+                        {task.progress>0 && <div style={{ position:'absolute',left:0,bottom:0,height:3,width:`${task.progress}%`,background:'rgba(255,255,255,0.5)',borderRadius:'0 0 0 2px' }}/>}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+              <div style={{ height:8, background:'var(--bg)' }}/>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
