@@ -688,12 +688,12 @@ export default function Home() {
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:5, flexShrink:0 }}>
                   <button onClick={()=>shiftAnchor(-1)} style={navBtnStyle}>‹</button>
-                  <div style={{ fontFamily:'var(--font-display)', fontSize:10, minWidth:140, textAlign:'center', color:'white' }}>{anchorLabel}</div>
+                  <div style={{ fontFamily:'var(--font-display)', fontSize:13, minWidth:160, textAlign:'center', color:'white', letterSpacing:'0.06em' }}>{anchorLabel}</div>
                   <button onClick={()=>shiftAnchor(1)} style={navBtnStyle}>›</button>
-                  <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }}>AUJ.</button>
+                  <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, width:'auto', padding:'0 10px', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.06em' }}>AUJ.</button>
                   {selectedProject && <>
-                    <button onMouseDown={e=>{e.stopPropagation();exportCSV()}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Exporter CSV">CSV</button>
-                    <button onMouseDown={e=>{e.stopPropagation();exportPDF()}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Exporter image">IMG</button>
+                    <button onMouseDown={e=>{e.stopPropagation();exportCSV()}} style={{ ...navBtnStyle, width:'auto', padding:'0 10px', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.06em' }} title="Exporter CSV">CSV</button>
+                    <button onMouseDown={e=>{e.stopPropagation();exportPDF()}} style={{ ...navBtnStyle, width:'auto', padding:'0 10px', fontSize:11, fontFamily:'var(--font-display)', letterSpacing:'0.06em' }} title="Exporter image">IMG</button>
                   </>}
                   <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(1)}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Réinitialiser zoom">1:1</button>
                   <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(z=>Math.min(3,z+0.25))}} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom +">+</button>
@@ -1028,4 +1028,4 @@ function btnStyle(type:'primary'|'ghost'): React.CSSProperties {
   return { fontFamily:'var(--font-display)', fontSize:15, padding:'10px 20px', borderRadius:2, border:type==='ghost'?'1.5px solid rgba(255,255,255,0.5)':'none', background:type==='primary'?'white':'transparent', color:type==='primary'?'#144947':'white', cursor:'pointer', letterSpacing:'0.08em' }
 }
 
-const navBtnStyle: React.CSSProperties = { width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:2, cursor:'pointer', fontSize:17, color:'white' }
+const navBtnStyle: React.CSSProperties = { width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:2, cursor:'pointer', fontSize:18, color:'white' }
