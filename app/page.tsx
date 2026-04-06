@@ -998,12 +998,13 @@ function OverviewPanel({ projects, tasks, year, onYearChange, onSelectProject }:
           return (
             <div key={proj.id}>
               <div style={{ display:'flex', alignItems:'stretch', borderBottom:'1px solid var(--border)', background:'var(--bg2)' }}>
-                <div onClick={()=>onSelectProject(proj.id)} style={{ width:LABEL_W, flexShrink:0, padding:'10px 16px', cursor:'pointer', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8, userSelect:'none' }}>
+                <div style={{ width:LABEL_W, flexShrink:0, padding:'8px 12px', borderRight:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
                   <div style={{ width:8,height:8,borderRadius:'50%',background:proj.color,flexShrink:0 }}/>
-                  <div>
+                  <div style={{ flex:1 }}>
                     <div style={{ fontFamily:'var(--font-display)', fontSize:14, letterSpacing:'0.08em', color:'var(--text)' }}>{proj.name}</div>
                     <div style={{ fontSize:11, color:'var(--text3)', marginTop:1 }}>{proj.client}</div>
                   </div>
+                  <button onPointerDown={e=>{e.stopPropagation();onSelectProject(proj.id)}} style={{ background:'var(--accent)', border:'none', borderRadius:2, color:'white', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.08em', padding:'3px 7px', flexShrink:0 }}>→</button>
                 </div>
                 <div style={{ flex:1, position:'relative', minHeight:40 }}>
                   {MS.map((_,i) => i>0 && <div key={i} style={{ position:'absolute',top:0,bottom:0,left:`${(i/12)*100}%`,width:1,background:'var(--border)',pointerEvents:'none' }}/>)}
