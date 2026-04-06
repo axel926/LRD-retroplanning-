@@ -70,7 +70,9 @@ export async function updateLane(id: string, updates: Partial<Lane>) {
   await supabase.from('lanes').update(updates).eq('id', id)
 }
 export async function deleteLane(id: string) {
-  await supabase.from('lanes').delete().eq('id', id)
+  await supabase.from('tasks').delete().eq('lane_id', id)
+  const { error } = await supabase.from('lanes').delete().eq('id', id)
+  if (error) throw error
 }
 export async function getAllTasks(): Promise<Task[]> {
   const { data } = await supabase.from('tasks').select('*').order('start_date', { ascending: true })
@@ -85,7 +87,8 @@ export async function updateTask(id: string, updates: Partial<Task>) {
   await supabase.from('tasks').update(updates).eq('id', id)
 }
 export async function deleteTask(id: string) {
-  await supabase.from('tasks').delete().eq('id', id)
+  const { error } = await supabase.from('tasks').delete().eq('id', id)
+  if (error) throw error
 }
 
 export type Attachment = {
