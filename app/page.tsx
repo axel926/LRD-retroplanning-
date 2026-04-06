@@ -587,13 +587,13 @@ export default function Home() {
   }
 
   async function exportPDF() {
-    if (!ganttRef.current) return
-    const { default: html2canvas } = await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js' as any)
+    if (!ganttRef.current || !selectedProject) return
+    const html2canvas = (await import('html2canvas')).default
     const canvas = await html2canvas(ganttRef.current, { scale: 2, useCORS: true, backgroundColor: '#EDE8DF' })
     const imgData = canvas.toDataURL('image/png')
     const a = document.createElement('a')
     a.href = imgData
-    a.download = `${selectedProject?.name || 'retroplanning'}-gantt.png`
+    a.download = `${selectedProject.name}-gantt.png`
     a.click()
   }
 
