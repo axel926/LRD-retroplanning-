@@ -677,8 +677,24 @@ export default function Home() {
             <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
               {/* TOOLBAR */}
               <div style={{ display:'flex', alignItems:'center', gap:8, padding:'16px 22px', background:'var(--topbar)', borderBottom:'1px solid rgba(0,0,0,0.12)', flexShrink:0, flexWrap:'wrap' }}>
-                <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'white', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:120 }}>
-                  {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
+                <div style={{ display:'flex', alignItems:'baseline', gap:16, flex:1, overflow:'hidden', minWidth:120 }}>
+                  <div style={{ fontFamily:'var(--font-display)', fontSize:32, letterSpacing:'0.08em', color:'white', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                    {selectedProject ? selectedProject.name : 'SÉLECTIONNER UN PROJET'}
+                  </div>
+                  {selectedProject && (() => {
+                    const start = parseDate(selectedProject.start_date).getTime()
+                    const end = parseDate(selectedProject.end_date).getTime()
+                    const now = Date.now()
+                    const elapsed = Math.round(Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100)))
+                    const daysLeft = Math.max(0, Math.round((end - now) / 86400000))
+                    const isLate = now > end
+                    return <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
+                      <span style={{ fontFamily:'var(--font-display)', fontSize:14, color:'rgba(255,255,255,0.6)', letterSpacing:'0.06em' }}>FIN {fmtShort(selectedProject.end_date)}</span>
+                      <span style={{ fontFamily:'var(--font-display)', fontSize:14, color: isLate ? '#ff8080' : 'rgba(255,255,255,0.5)', letterSpacing:'0.06em' }}>·</span>
+                      <span style={{ fontFamily:'var(--font-display)', fontSize:14, color: isLate ? '#ff8080' : '#9DD4D1', letterSpacing:'0.06em' }}>{elapsed}%</span>
+                      <span style={{ fontFamily:'var(--font-display)', fontSize:14, color: isLate ? '#ff8080' : 'rgba(255,255,255,0.5)', letterSpacing:'0.06em' }}>{isLate ? 'DÉPASSÉ' : `J-${daysLeft}`}</span>
+                    </div>
+                  })()}
                 </div>
                 <div style={{ display:'flex', borderRadius:2, overflow:'hidden', border:'1px solid rgba(255,255,255,0.3)', flexShrink:0 }}>
                   {(['day','week','month'] as ZoomLevel[]).map(z => (
