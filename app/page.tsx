@@ -620,8 +620,9 @@ export default function Home() {
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
         {/* SIDEBAR */}
         <div style={{ width:260, flexShrink:0, background:'var(--sidebar)', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <div style={{ padding:'14px 12px 8px', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.2em', color:'#9DD4D1', marginBottom:10 }}>PROJETS</div>
+          <div style={{ padding:'14px 12px 8px', borderBottom:'1px solid rgba(255,255,255,0.08)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.2em', color:'#9DD4D1' }}>PROJETS</div>
+            <button onClick={() => setShowProjModal(true)} style={{ background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', borderRadius:2, color:'white', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:12, letterSpacing:'0.08em', padding:'4px 10px', flexShrink:0 }}>+ PROJET</button>
           </div>
           <div style={{ flex:1, overflowY:'auto', padding:'6px' }}>
             {loading && <div style={{ color:'rgba(255,255,255,0.4)', fontSize:11, padding:8 }}>Chargement…</div>}
