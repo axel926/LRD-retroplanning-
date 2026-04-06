@@ -898,7 +898,7 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <OverviewPanel projects={projects} tasks={tasks} year={overviewYear} onYearChange={setOverviewYear} onSelectProject={async (id)=>{await selectProject(id);setView('gantt')}} />
+            <OverviewPanel projects={projects} tasks={tasks} year={overviewYear} onYearChange={setOverviewYear} onSelectProject={(id)=>{setSelectedId(id);setView('gantt');getLanes(id).then(setLanes)}} />
           )}
         </div>
       </div>
