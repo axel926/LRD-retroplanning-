@@ -561,6 +561,42 @@ export default function Home() {
     ? `S${getWeekNum(columns[0]?.start||new Date())} — S${getWeekNum(columns[columns.length-1]?.start||new Date())}`
     : `${MONTHS_FULL[columns[0]?.start.getMonth()]} — ${MONTHS_FULL[columns[columns.length-1]?.start.getMonth()]} ${columns[columns.length-1]?.start.getFullYear()}`
 
+  // ── EXPORT ────────────────────────────────────────────────────────────────
+  function exportCSV() {
+    if (!selectedProject) return
+    const rows = [['Projet','Ligne','Bloc','Début','Fin','Avancement']]
+    projTasks.forEach(task => {
+      const lane = lanes.find(l => l.id === task.lane_id)
+      rows.push([
+        selectedProject.name,
+        lane?.name || '',
+        task.name,
+        task.start_date,
+        task.end_date,
+        task.progress + '%'
+      ])
+    })
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${selectedProject.name}-retroplanning.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function exportPDF() {
+    if (!ganttRef.current) return
+    const { default: html2canvas } = await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js' as any)
+    const canvas = await html2canvas(ganttRef.current, { scale: 2, useCORS: true, backgroundColor: '#EDE8DF' })
+    const imgData = canvas.toDataURL('image/png')
+    const a = document.createElement('a')
+    a.href = imgData
+    a.download = `${selectedProject?.name || 'retroplanning'}-gantt.png`
+    a.click()
+  }
+
   return (
     <div data-theme={theme} style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', background:'var(--bg)', color:'var(--text)' }}>
       {/* TOPBAR */}
@@ -655,6 +691,10 @@ export default function Home() {
                   <div style={{ fontFamily:'var(--font-display)', fontSize:10, minWidth:140, textAlign:'center', color:'white' }}>{anchorLabel}</div>
                   <button onClick={()=>shiftAnchor(1)} style={navBtnStyle}>›</button>
                   <button onClick={()=>setAnchor(new Date())} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }}>AUJ.</button>
+                  {selectedProject && <>
+                    <button onMouseDown={e=>{e.stopPropagation();exportCSV()}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Exporter CSV">CSV</button>
+                    <button onMouseDown={e=>{e.stopPropagation();exportPDF()}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Exporter image">IMG</button>
+                  </>}
                   <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(1)}} style={{ ...navBtnStyle, width:'auto', padding:'0 8px', fontSize:9, fontFamily:'var(--font-display)' }} title="Réinitialiser zoom">1:1</button>
                   <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(z=>Math.min(3,z+0.25))}} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom +">+</button>
                   <button onMouseDown={e=>{e.stopPropagation();setGanttZoom(z=>Math.max(0.3,z-0.25))}} style={{ ...navBtnStyle, fontSize:16 }} title="Zoom -">−</button>
