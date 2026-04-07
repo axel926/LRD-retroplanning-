@@ -873,6 +873,30 @@ export default function Home() {
                       <div style={{ fontSize:10, color:'var(--text3)', marginTop:3 }}>Clic = ajouté à aujourd'hui</div>
                     </div>
                     <div style={{ padding:'8px' }}>
+                      {/* BLOC LIBRE EN HAUT */}
+                      <div style={{ marginBottom:14, paddingBottom:12, borderBottom:'1px solid var(--border)' }}>
+                        <div style={{ fontFamily:'var(--font-display)', fontSize:10, letterSpacing:'0.15em', color:'var(--text2)', marginBottom:8 }}>BLOC LIBRE</div>
+                        <CustomBlockForm onAdd={async (name, color) => {
+                          if (!selectedId) return
+                          let laneId = libraryTargetLane
+                          if (!laneId) {
+                            if (lanes.length === 0) {
+                              const lane = await createLane({ project_id: selectedId, name: 'Ligne 1', sort_order: 0 })
+                              setLanes([lane])
+                              laneId = lane.id
+                            } else { laneId = lanes[0].id }
+                          }
+                          const laneTasks = tasks.filter(t => t.lane_id === laneId)
+                          let startDate = toIso(new Date())
+                          if (laneTasks.length > 0) {
+                            const lastEnd = laneTasks.reduce((max, t) => t.end_date > max ? t.end_date : max, laneTasks[0].end_date)
+                            startDate = lastEnd
+                          }
+                          const t = await createTask({ project_id: selectedId, lane_id: laneId, name, category: 'LIBRE', subcategory: null, color, start_date: startDate, end_date: addDays(startDate, 7), progress: 0 })
+                          setTasks(prev => [...prev, t])
+                          await load()
+                        }}/>
+                      </div>
                       {BLOCK_LIBRARY.map(cat => (
                         <div key={cat.category} style={{ marginBottom:14 }}>
                           <div style={{ display:'flex', alignItems:'center', gap:6, padding:'3px 6px 6px' }}>
