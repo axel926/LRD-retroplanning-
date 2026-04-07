@@ -865,8 +865,8 @@ export default function Home() {
 
                 {/* LIBRARY PANEL */}
                 {showLibrary && (
-                  <div style={{ width:250, flexShrink:0, background:'var(--surface)', borderLeft:'1px solid var(--border)', overflowY:'auto', display:'flex', flexDirection:'column' }}>
-                    <div style={{ padding:'12px 14px 8px', borderBottom:'1px solid var(--border)', position:'sticky', top:0, background:'var(--surface)', zIndex:5 }}>
+                  <div style={{ width:260, flexShrink:0, background:'var(--bg2)', borderLeft:'1px solid var(--border)', overflowY:'auto', display:'flex', flexDirection:'column' }}>
+                    <div style={{ padding:'12px 14px 8px', borderBottom:'1px solid var(--border)', position:'sticky', top:0, background:'var(--bg2)', zIndex:5 }}>
                       <div style={{ fontFamily:'var(--font-display)', fontSize:11, letterSpacing:'0.18em', color:'var(--text)' }}>
                         {libraryTargetLane ? `→ ${lanes.find(l=>l.id===libraryTargetLane)?.name||'LIGNE'}` : 'AJOUTER UN BLOC'}
                       </div>
