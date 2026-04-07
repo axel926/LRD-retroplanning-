@@ -953,6 +953,34 @@ export default function Home() {
   )
 }
 
+function CustomBlockForm({ onAdd }: { onAdd: (name: string, color: string) => void }) {
+  const [name, setName] = useState('')
+  const [color, setColor] = useState('#1E6B68')
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+      <input
+        type="text"
+        value={name}
+        onChange={e=>setName(e.target.value)}
+        placeholder="Nom du bloc..."
+        onKeyDown={e=>{ if(e.key==='Enter'&&name.trim()){onAdd(name.trim(),color);setName('')} }}
+        style={{ fontSize:12, padding:'7px 10px' }}
+      />
+      <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+        <div style={{ display:'flex', gap:4, flex:1, flexWrap:'wrap' }}>
+          {['#1E6B68','#2D6B8C','#6B8C2D','#8C6B2D','#6B2D8C','#8C2D5A','#C4562A','#2D8C7A'].map(col => (
+            <div key={col} onClick={()=>setColor(col)} style={{ width:18,height:18,borderRadius:'50%',background:col,cursor:'pointer',border:`2px solid ${col===color?'var(--text)':'transparent'}`,flexShrink:0 }}/>
+          ))}
+        </div>
+        <button
+          onMouseDown={e=>{e.stopPropagation();if(name.trim()){onAdd(name.trim(),color);setName('')}}}
+          style={{ background:'var(--accent)',border:'none',borderRadius:2,color:'white',cursor:'pointer',fontFamily:'var(--font-display)',fontSize:12,letterSpacing:'0.08em',padding:'7px 12px',whiteSpace:'nowrap',flexShrink:0 }}
+        >+ AJOUTER</button>
+      </div>
+    </div>
+  )
+}
+
 function ColorPicker({ colors, selected, onSelect }: { colors: string[], selected: string, onSelect: (c:string)=>void }) {
   return (
     <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:4 }}>
