@@ -128,6 +128,7 @@ export default function Home() {
 
   // Block drag
   const hoveredLaneRef = useRef<string|null>(null)
+  const isDraggingRef = useRef(false)
   const [ganttZoom, setGanttZoom] = useState(1)
   const [dropLaneHighlight, setDropLaneHighlight] = useState<string|null>(null)
   const blockDragRef = useRef<{
@@ -186,12 +187,13 @@ export default function Home() {
 
   useEffect(() => { load() }, [])
 
-  // Refresh toutes les 5 secondes
+  // Refresh toutes les 5 secondes - pause pendant drag
   useEffect(() => {
     const interval = setInterval(async () => {
+      if (isDraggingRef.current) return
       const tsks = await getAllTasks()
       setTasks(tsks)
-    }, 3000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [])
 
@@ -247,6 +249,7 @@ export default function Home() {
   function onLaneDragStart(e: React.MouseEvent, laneId: string, order: number) {
     e.preventDefault()
     laneDragRef.current = { laneId, startY: e.clientY, currentOrder: order }
+    isDraggingRef.current = true
     setDraggingLaneId(laneId)
     window.addEventListener('mousemove', onLaneDragMove)
     window.addEventListener('mouseup', onLaneDragEnd)
@@ -272,6 +275,7 @@ export default function Home() {
   }
 
   async function onLaneDragEnd() {
+    isDraggingRef.current = false
     setDraggingLaneId(null)
     window.removeEventListener('mousemove', onLaneDragMove)
     window.removeEventListener('mouseup', onLaneDragEnd)
@@ -308,6 +312,7 @@ export default function Home() {
     const dur = (parseDate(task.end_date).getTime() - parseDate(task.start_date).getTime()) / 86400000
 
     blockDragRef.current = { taskIds: ids, type: isResize ? 'resize' : 'move', startX: e.clientX, areaWidth: rect.width, totalDays, origStarts, origEnds, dur, resizeTaskId: isResize ? taskId : undefined }
+    isDraggingRef.current = true
     window.addEventListener('mousemove', onBlockDragMove)
     window.addEventListener('mouseup', (e) => onBlockDragEnd(e))
   }
@@ -350,6 +355,7 @@ export default function Home() {
     blockDragRef.current = null
     hoveredLaneRef.current = null
     setDropLaneHighlight(null)
+    isDraggingRef.current = false
     window.removeEventListener('mousemove', onBlockDragMove)
     window.removeEventListener('mouseup', onBlockDragEnd)
     if (!d) return
